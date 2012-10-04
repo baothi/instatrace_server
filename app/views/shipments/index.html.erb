@@ -1,0 +1,208 @@
+<div id='search'>
+  <div class="advanced" style="display:none;">
+    <div class="padded">
+      <h4><%= t(:header_advanced_search) %></h4>
+      <%= form_for @search || Shipment.new, :url => shipments_path, :html => {:method => :get} do |f| %>
+        <div class="row-fluid">
+          <div class="span3">
+            <%= f.label :service_level, t(:label_current_status) %>
+            <%= f.select :service_level, Shipment.data["AT7"].values, :include_blank => t(:text_prompt_select) %>
+          </div><div class="span1"></div>
+          <div class="span3">
+            <%= f.label :shipper, t(:label_shipper) %>
+            <%= f.text_field :shipper %>
+          </div><div class="span1"></div>
+          <div class="span3">
+            <%= f.label :consignee, t(:label_consignee) %>
+            <%= f.text_field :consignee %>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span3">
+            <%= f.label :hawb, t(:label_hawb_number) %>
+            <%= f.text_field :hawb, :class => :hawb %><span class="error"></span>
+          </div><div class="span1"></div>
+          <div class="span3">
+            <%= f.label :ship, t(:label_ship_date) %>
+            <%= f.text_field :ship, :class => "datepicker" %>
+          </div><div class="span1"></div>
+          <div class="span2">
+            <%= f.label :origin, t(:label_origin_city) %>
+            <%= f.text_field :origin %>
+          </div>
+          <div class="span2">
+            <%= f.label :field1, t(:label_origin_airport) %>
+            <%= text_field_tag :field1 %>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span3">
+            <%= f.label :mawb, t(:label_mawb_number) %>
+            <%= f.text_field :mawb, :class => :hawb %><span class="error"></span>
+          </div><div class="span1"></div>
+          <div class="span3">
+            <%= f.label :delivery, t(:label_delivery_date) %>
+            <%= f.text_field :delivery, :class => "datepicker" %>
+          </div><div class="span1"></div>
+          <div class="span2">
+            <%= f.label :destination, t(:label_destination) %>
+            <%= f.text_field :destination %>
+          </div>
+          <div class="span2">
+            <%= f.label :field2, t(:label_destination_airport) %>
+            <%= text_field_tag :field2 %>
+          </div>
+        </div>
+        <%= f.submit t(:button_search), :class => "btn btn-success" %>
+        <%= link_to t(:button_close_advanced_search), "#", :class => "toggle_advanced" %>
+      <% end %>
+    </div><br />
+  </div>
+  
+  <div class="simple">
+    <h4><%= t(:header_search_shipment) %></h4>
+    <%= form_for @search || Shipment.new, :url => shipments_path, :html => {:class => 'form-search', :method => :get} do |f| %>
+      <table><tr>
+        <td><%= f.select :search_type, [[t(:label_hawb_number), :hawb], [t(:label_mawb_number), :mawb]] %></td>
+        <td><%= f.text_field :query, :class => :hawb %><span class="error"></span></td>
+        <td><%= f.submit t(:button_search), :class => "btn btn-success", :id => "simple_search" %></td>
+      </table>
+    <% end %>
+
+    <%= link_to t(:button_advanced_search), "#", :class => "toggle_advanced" %>
+  </div>
+</div>
+
+<div class="clearfix"></div>
+<br />
+<% if can?(:create, Shipment) %>
+  <span class='header_button'> 
+    <%= link_to t(:button_create_new_shipment), new_shipment_path, :class => 'popup btn btn-inverse' %>
+  </span>
+<% end %>
+<br />
+<% if @shipments.any? %>
+  <h3 class="table_header_h3"><%= t(:header_shipment) %></h3>
+  <table class="table_w bordered-table tablesorter", id="shipments_table">
+    <thead><tr>
+      <th id="sort_by_hawb" class="header"><%= t(:column_hawb) %></th>
+      <th><%= t(:column_ship_date) %></th>
+      <th><%= t(:column_delivery_date) %></th>
+      <th><%= t(:column_current_status) %></th>
+      <th><%= t(:column_origin) %></th>
+      <th><%= t(:column_destination) %></th>
+      <th style="width:62px;"><%= t(:column_location) %></th>
+      <th><%= t(:column_shipper) %></th>
+      <th><%= t(:column_consignee) %></th>
+    </tr></thead>
+  <tbody>
+    <% @shipments.each do |ship| %>
+      <tr>
+        <td>
+          <%= link_to ship.hawb_with_scac, shipment_path(ship.hawb), :class => 'link_bold' %>
+        </td>
+        <td><%= ship.ship if ship.ship %> </td> 
+        <td><%= ship.delivery if ship.delivery %></td>
+        <td><%= ship.current_status %></td>
+        <td><%= ship.origin %></td>
+        <td><%= ship.destination %></td>
+        <td align="center"><%= link_to "<i class='icon-globe'></i>".html_safe, google_location_url(ship.locations.last.latitude,ship.locations.last.longitude), :title => t(:title_goto_direction), :target => :blank  rescue '-' %></td>
+        <td class="link_bold"><%= ship.shipper %></td>
+        <td class="link_bold"><%= ship.consignee %></td>
+      </tr>  
+    <% end %>
+  </tbody>    
+  </table>
+  <div class="pull-right">
+    <%= paginate @shipments %>
+  </div>
+  <br clear="all" />
+<% else %>
+  <%= t(:text_no_shipments_found) %>
+<% end if @shipments %>
+<% if current_user && (current_user.manager? || current_user.operator?) %>
+  <hr>
+  <div class="well">
+    <% form_for Shipment.new, :url => upload_edi_shipments_path, :html => {:multipart => true} do |f| %>
+      <div class="control-group">
+        <%= label_tag :file_edi, t(:label_upload_new_shipment) %>
+        <%= file_field_tag :file_edi %>
+      </div>
+      <div class="control-group">
+        <%= f.submit t(:button_upload), :class => 'btn btn-danger' %>
+      </div>
+    <% end %>
+    <br clear=all />
+  </div>
+<% end %>
+
+<script type="text/javascript">
+  function notifyCreate(data){     
+    var response = JSON.parse(data);
+    $("#shipment_table_template").tmpl(response).appendTo("#shipments_table");
+  }
+
+  function notifyError(data) {
+    alert(data);
+  }
+
+  $(document).ready(function() {
+
+    $("table.tablesorter").tablesorter({
+      sortList: [[1,0]],
+      // headers: {0: {sorter: false}, 6: {sorter: false} }
+      headers: {6: {sorter: false} }
+    });
+
+    //  Custom sort method for all records of shipments, instead of tablesort method.
+    //  For each new sort mode by hawb, we getting new data from server and replace ones.
+    
+    // $('th#sort_by_hawb').click(function(e){
+    //   e.preventDefault();
+    //   var sort = ''
+    //   if ($(e.target).hasClass('headerSortDown')) 
+    //     sort = 'asc'
+    //   else
+    //     sort = 'desc'
+    //   $.ajax({
+    //     url: '<%= shipments_url %>',
+    //     data: {hawb_sort_by:sort},
+    //     type: 'get',
+    //     dataType: 'json',
+    //     success: function(data){
+    //       //  Clear all rows
+    //       $("#shipments_table tbody").empty();
+    //       //  Replace rows
+    //       $.each(data, function(idx,item){
+    //         $("#shipment_table_template").tmpl(item).appendTo("#shipments_table tbody");
+    //       });
+    //       //  Save table state
+    //       $("table.tablesorter").trigger("update"); 
+    //       //  Set sort type
+    //       $("table.tablesorter th.header").attr('class','header');
+    //       if (sort == 'desc')
+    //         $(e.target).attr('class','header headerSortDown')
+    //       else
+    //         $(e.target).attr('class','header headerSortUp')
+    //     }
+    //   })
+    // })
+
+  });  
+</script>
+
+<script id="shipment_table_template" type="text/x-jquery-tmpl">
+<tr>
+  <td>
+    <a href="/shipments/${hawb}" class="link_bold">${hawb_with_scac}</a>
+  </td>
+  <td>${ship}</td> 
+  <td>${delivery}</td>
+  <td>${current_status}</td>
+  <td>${origin}</td>
+  <td>${destination}</td>
+  <td align="center">-</td>
+  <td class="link_bold">${shipper}</td>
+  <td class="link_bold">${consignee}</td>
+</tr>
+</script>

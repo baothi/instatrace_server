@@ -1,0 +1,5 @@
+table {table-layout:fixed}
+table td {
+  /*overflow:auto;*/
+  overflow:hidden;
+}

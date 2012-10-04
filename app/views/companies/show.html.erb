@@ -1,0 +1,81 @@
+<%= render :partial => 'shared/company_header', :object => @company %>
+<%= render :partial => 'shared/company_relation', :object => @company %>
+<%= render :partial => 'shared/company_users', :object => @company %>
+
+<script type="text/javascript">
+  function notifyJoinAgents(data) {
+    var response = JSON.parse(data);
+    $.each(response, function(i, agent) {
+      $("#agent_table_template").tmpl(agent).appendTo("#companies_table");
+    });
+    updateUsersStatus();
+  }
+  function notifyJoinAgentsError(data) {
+    alert(data);
+  }
+  function notifyUnlinkAgent(data) {
+    $('#agent_id_row'+data).remove();
+    updateUsersStatus();
+  }
+
+  function notifyUserCreate(data) {
+    var response = JSON.parse(data);
+    var roles = {"4": "admins","3": "operators","2": "drivers"};
+      $("#user_table_template").tmpl(response).appendTo('#'+roles[response.role_id]+'_table');
+    updateUsersStatus();
+  }
+
+  function notifyUserUpdate(data) {
+    var response = JSON.parse(data);
+    var roles = {"4": "admins","3": "operators","2": "drivers"};
+    $("#user_table_template").tmpl(response).replaceAll($('.'+roles[response.role_id]+'#'+response.id).closest('tr'));
+    updateUsersStatus();
+  }
+
+  function notifyError(data) {
+    alert(data);
+  }
+</script>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("a.delete_user").click(function() {
+      var ids = $.map($(this).closest("section").find("input:checked"), function(val) { return val.id; })
+      if (ids.length == 0) {
+        alert("<%= t(:alert_no_members_checked) %>");
+        return false;
+      }
+      $(this).attr("href", $(this).attr("href") + "?ids=" + ids);
+    });
+  });
+</script>
+
+<!-- JS Templates section -->
+<script id="agent_table_template" type="text/x-jquery-tmpl">
+<tr id="agent_id_row${id}">
+  <td class="mark"><input type="checkbox" id="${id}", class="all", title="<%= t(:title_check_to_remove) %>"/></td>
+  <td><a href="/agents/${id}" class="link_bold">${name} (AGT)</a></td>
+  <td>${address}</td>
+  <td>${phone}</td>
+  <td class='link_bold'>${ffs}</td>
+  <td>${admins}</td>
+  <td>${operators}</td>
+  <td>${drivers}</td>
+  <td><a href="/agents/${id}/companies/${company_id}/unlink" data-confirm="Are you sure?" data-method="delete" data-remote="true" rel="nofollow" title="Remove"><i class="icon-remove"></i></a></td>
+</tr>
+</script>
+
+<script id="user_table_template" type="text/x-jquery-tmpl">
+<tr>
+  <td class="mark">
+    <input class="all" id="${id}" name="${id}" title="Check to remove" type="checkbox">
+  </td>
+  <td class="link_bold"> ${user_fullname} </td>
+  <td> ${email} </td>
+  <td> ${phone} </td>
+  <td> ${login} </td>
+  <td>
+    <a href="/companies/${company_id}/users/${id}/edit" class="popup"><i class="icon-pencil"></i></a>
+  </td>
+</tr>
+</script>

@@ -1,0 +1,39 @@
+<p>
+  Your shipment
+  <strong><%= @milestone.shipment.hawb %></strong>
+  of
+  <strong><%= number_with_delimiter(@milestone.shipment.pieces) %></strong>
+  pcs weighting
+  <strong><%= number_with_delimiter(@milestone.shipment.weight.to_i) %> </strong>
+  lbs. from
+  <strong><%= @milestone.shipment.origin %> </strong>
+  <% unless @milestone.shipment.destination.blank? %>
+    to
+	  <strong><%= @milestone.shipment.destination.to_s %></strong>
+	<% end %>
+  has the following status:
+</p>
+<div>
+  <ul>
+  	<li>
+  	  Action:
+  	  <strong><%= @milestone.action %> </strong>
+  	</li>
+  	<li>
+  	  Date:
+  	  <strong><%= @milestone.updated_at.in_time_zone(@milestone.timezone).strftime("%m/%d/%y") %> </strong>
+  	</li>
+  	<li>
+  	  Time:
+  	  <strong><%=	@milestone.updated_at.in_time_zone(@milestone.timezone).strftime("%I:%M%p") %> </strong>
+  	</li>
+  	<li>
+  	  See Signature at
+  	  <%= link_to "#{root_url.gsub("/en",'')}#{@milestone.signature.signature.url}", "#{root_url.gsub('/en',"")}#{@milestone.signature.signature.url}" %>
+  	</li>
+  	<li>
+  	  Location:
+  	  <%= link_to "https://maps.google.com/maps?&q=loc:#{@milestone.latitude},#{@milestone.longitude}&z=8", "https://maps.google.com/maps?&q=loc:#{@milestone.latitude},#{@milestone.longitude}&z=8", :target => :blank %>
+  	</li>
+  </ul>
+</div>

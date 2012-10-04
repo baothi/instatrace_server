@@ -1,0 +1,135 @@
+  <div class="breadcrumbs">
+<%= link_to t(:menu_shipment), shipments_path %> > <%= @shipment.hawb %>
+</div>
+<table width="100%">
+  <tr>
+    <th>&nbsp;</th>
+    <td>&nbsp;</td>
+  </tr>
+  <tr width="50%">
+    <td valign="top">
+      <table class="table_detail" cellspacing="20" width="100%">
+        <tr>
+          <th><%= t(:column_hawb) %></th>
+          <th><%= t(:column_mawb) %></th>
+          <th><%= t(:column_service_level) %></th>
+        </tr>
+        <tr>
+          <td valign="top"><%= @shipment.hawb_with_scac %></td>
+          <td valign="top"><%= @shipment.mawb %></td>
+          <td valign="top"><%= @shipment.service_level %></td>
+        </tr>
+      </table>
+    </td>
+    <td width="50%" valign="top">
+      <table class="table_detail2" width="100%">
+        <tr>
+          <th><%= t(:column_weight) %></th>
+          <th><%= t(:column_pieces) %></th>
+          <th><%= t(:column_expected_delivery_date) %></th>
+        </tr>
+        <tr>
+          <td valign="top"><%= number_with_delimiter(@shipment.weight.to_i) %></td>
+          <td valign="top"><%= number_with_delimiter(@shipment.pieces.to_i) %></td>
+          <td valign="top"><%= @shipment.delivery.to_date rescue nil %></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th>&nbsp;</th>
+    <td>&nbsp;</td>
+  </tr>
+  <tr class="ships_info">
+    <td>
+      <div class="sub-header" style="margin-right:6px;"><%= t(:text_ship_from) %></div>
+      <h3><%= @shipment.shipper %></h3>
+      <%= @shipment.origin %>
+    </td>
+    <td>
+      <div class="sub-header" style="margin-left:6px;"><%= t(:text_ship_to) %></div>
+      <h3><%= @shipment.consignee %></h3>
+      <%= @shipment.destination %>
+    </td>
+  </tr>
+  <tr>
+    <th>&nbsp;</th>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+
+<%= t(:last_location) %>: <%= @shipment.last_location rescue '-' %>
+<br />
+
+<div class="header-container">
+  <h3 class="table_header_h3"><strong><%= t(:header_milestones) %></strong></h3>
+<%= link_to t(:button_create_new_milestone), new_shipment_milestone_path(@shipment), :class => 'popup btn btn-inverse' if can?(:update, Shipment) && can?(:create, Milestone) %>
+<br />
+<br />
+<table class="table_w bordered-table tablesorter" id="milestones_table">
+  <thead><tr>
+    <th><%= t(:column_update_date_and_time) %></th>
+    <th><%= t(:column_updated_by) %></th>
+    <th><%= t(:column_status) %></th>
+    <th style="width:62px;"><%= t(:column_location) %></th>
+    <th><%= t(:column_signature) %></th>
+    <th><%= t(:column_damage) %></th>
+    <th><%= t(:column_documents) %></th>
+    <th style="width:62px;"><%= t(:column_note) %></th>
+  </tr></thead>
+  <% @shipment.milestones.completed.order("updated_at DESC").each do |ms| %>
+    <tr>
+      <td><%= ms.created_time_with_timezone %></td>
+      <td> <strong><%= ms.driver.try(:username) %></strong> </td>
+      <td> <%= ms.action.try(:to_s).try(:humanize) %> </td>
+      <td align="center">
+        <% if ms.location? %> 
+          <%= link_to "<i class='icon-globe'></i>".html_safe, google_location_url(ms.latitude,ms.longitude), :title => t(:title_goto_direction), :target => :blank %>
+        <% end %>
+      </td>
+      <td>
+	      <% if (ms.signature) %>
+	         <%= ms.signature.name %> <%= link_to('link', ms.signature.signature.url, :target => :blank) unless ms.signature.signature.nil? %>
+	      <% end %>
+      </td>
+      <td>
+      
+      <% if ms.damaged %>
+        <%= ms.damage_desc %><br />
+      <% end %>
+      <%= damages_urls(ms,'image') %>
+      </td>
+      <td> <%= documents_urls(ms,'doc') %> </td>
+      <td valign="middle"> <%= check_box_tag :public, ms.public, ms.public  %><%= t(:text_public) %></td>
+    </tr>  
+  <% end %>
+</table>
+
+<script type="text/javascript">
+  function notifyCreate(data){     
+    // var response = JSON.parse(data);
+    var response = $.parseJSON(data);
+    $("#milestone_table_template").tmpl(response).prependTo("#milestones_table");
+  }
+
+  function notifyError(data) {
+    alert(data);
+  }
+</script>
+
+<script id="milestone_table_template" type="text/x-jquery-tmpl">
+<tr>
+  <td>${created_time_with_timezone}</td>
+  <td><strong>${driver}</strong></td>
+  <td>${action}</td>
+  <td>${location}</td>
+  <td>${signature}</td>
+  <td>${damage_desc}</td>
+  <td>${doc}</td>
+  {{if public == 1}}  
+    <td valign="middle"> <input checked="checked" id="public" name="public" type="checkbox" value="${public}"><%= t(:text_public) %></td>
+  {{else}}
+    <td valign="middle"> <input id="public" name="public" type="checkbox" value="${public}"><%= t(:text_public) %></td>
+  {{/if}}  
+</tr>
+</script>

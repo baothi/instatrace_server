@@ -1,0 +1,19 @@
+<%= form_for @shipment, :remote => true, :html => {:class => "form-vertical", :id => 'shipment_new'} do |f| %>
+	<div class="row" style="padding:0 30px;">
+		<div class="span8">
+			<header><%= f.object.new_record? ? t(:header_create_new) : t(:header_update) %> <%= t(:header_shipment) %></header>
+			<%= render :partial => 'form', :object => f %>
+			<div class="control-group">
+				<div class="controls">
+					<%= f.submit t(:button_save), :class => "btn btn-danger", :id => 'new_shipment_submit', 'data-loading-text' => t(:button_saving) %>
+				</div>
+			</div>			
+		</div>
+	</div>
+	<br clear=all />
+<% end %>
+<script type="text/javascript">
+	$('form').submit(function(){
+		$('#new_shipment_submit').button('loading');
+	})
+</script>

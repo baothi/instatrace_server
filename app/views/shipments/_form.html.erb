@@ -1,0 +1,42 @@
+<div class="row">
+  <div class="span4">
+    <div class="control-group">
+      <div class="controls">  
+        <%= label_tag :hawb, t(:column_hawb), :class => 'control-label' %>
+        <%= form.text_field :hawb, :class => 'span4' %>
+        <%= label_tag :service_level, t(:column_service_level), :class => 'control-label' %>
+        <%= form.text_field :service_level, :class => 'span4' %>
+        <%= label_tag :mawb, t(:column_mawb), :class => 'control-label' %>
+        <%= form.text_field :mawb, :class => 'span4' %>
+        <%= label_tag :pieces, t(:column_pieces), :class => 'control-label' %>
+        <%= form.text_field :pieces, :class => 'span4' %>
+        <%= label_tag :weight, t(:column_weight), :class => 'control-label' %>
+        <%= form.text_field :weight, :class => 'span4' %>
+        <%= label_tag :origin, t(:column_origin), :class => 'control-label' %>
+        <%= form.text_field :origin, :class => 'span4' %>
+      </div>
+    </div>
+  </div>
+  <div class="span4">
+    <div class="control-group">
+      <div class="controls">
+        <%= label_tag :destination, t(:column_destination), :class => 'control-label' %>
+        <%= form.text_field :destination, :class => 'span4' %>
+        <%= label_tag :shipper, t(:column_shipper), :class => 'control-label' %>
+        <%= form.text_field :shipper, :class => 'span4' %>
+        <%= label_tag :consignee, t(:column_consignee), :class => 'control-label' %>
+        <%= form.text_field :consignee, :class => 'span4' %>
+        <%= label_tag :ship, t(:column_ship_date), :class => 'control-label' %>
+        <%= form.text_field :ship,  :value => Date.today, :class => 'span4 datepicker' %>
+        <%= label_tag :delivery, t(:column_delivery_date), :class => 'control-label' %>
+        <%= form.text_field :delivery, :value  => Date.today, :class => 'span4 datepicker' %>        
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $('input.datepicker').datepicker({dateFormat:'mm/dd/yy'});
+</script>
+
+

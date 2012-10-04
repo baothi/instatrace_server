@@ -1,0 +1,35 @@
+DEPRECATION WARNING: config.action_view.debug_rjs will be removed in 3.1, from 3.1 onwards you will need to install prototype-rails to continue to use RJS templates . (called from <top (required)> at /home/nvngoc/source/instatrace_final/config/environment.rb:5)
+  [1m[36mSQL (19.2ms)[0m  [1mdescribe `permissions_roles`[0m
+Creating scope :search. Overwriting existing method Agent.search.
+  [1m[35mSQL (0.6ms)[0m  describe `locations_shipments`
+Creating scope :search. Overwriting existing method Shipment.search.
+  [1m[36mShipment Load (0.2ms)[0m  [1mSELECT id,hawb AS name FROM `shipments`[0m
+Creating scope :search. Overwriting existing method User.search.
+  [1m[35mSQL (25.4ms)[0m  SHOW TABLES
+  [1m[36mRole Load (0.2ms)[0m  [1mSELECT `roles`.* FROM `roles` WHERE `roles`.`name` = 'Driver' LIMIT 1[0m
+  [1m[35mUser Load (0.2ms)[0m  SELECT id,email AS name FROM `users` WHERE `users`.`role_id` = 2
+Creating scope :search. Overwriting existing method Company.search.
+
+
+Started GET "/" for 127.0.0.1 at 2012-10-04 09:58:03 +0700
+  [1m[36mShipment Load (0.2ms)[0m  [1mSELECT id,hawb AS name FROM `shipments`[0m
+  [1m[35mRole Load (0.1ms)[0m  SELECT `roles`.* FROM `roles` WHERE `roles`.`name` = 'Driver' LIMIT 1
+  [1m[36mUser Load (0.1ms)[0m  [1mSELECT id,email AS name FROM `users` WHERE `users`.`role_id` = 2[0m
+DEPRECATION WARNING: Disabling sessions for a single controller has been deprecated. Sessions are now lazy loaded. So if you don't access them, consider them off. You can still modify the session cookie options with request.session_options. (called from <class:ShipmentsController> at /home/nvngoc/source/instatrace_final/app/controllers/shipments_controller.rb:6)
+  Processing by ShipmentsController#index as HTML
+  [1m[35mShipment Load (2.3ms)[0m  SELECT `shipments`.* FROM `shipments`
+  [1m[36mShipment Load (0.2ms)[0m  [1mSELECT `shipments`.* FROM `shipments` WHERE (1=2) LIMIT 20 OFFSET 0[0m
+Rendered application/_menu.html.erb (1.5ms)
+Rendered shipments/index.html.erb within layouts/application (68.1ms)
+Completed 200 OK in 114ms (Views: 69.4ms | ActiveRecord: 46.1ms)
+DEPRECATION WARNING: config.action_view.debug_rjs will be removed in 3.1, from 3.1 onwards you will need to install prototype-rails to continue to use RJS templates . (called from <top (required)> at /home/nvngoc/source/instatrace_final/config/environment.rb:5)
+  [1m[36mSQL (0.5ms)[0m  [1mdescribe `permissions_roles`[0m
+Creating scope :search. Overwriting existing method Agent.search.
+  [1m[35mSQL (0.6ms)[0m  describe `locations_shipments`
+Creating scope :search. Overwriting existing method Shipment.search.
+  [1m[36mShipment Load (0.2ms)[0m  [1mSELECT id,hawb AS name FROM `shipments`[0m
+Creating scope :search. Overwriting existing method User.search.
+  [1m[35mSQL (14.0ms)[0m  SHOW TABLES
+  [1m[36mRole Load (0.1ms)[0m  [1mSELECT `roles`.* FROM `roles` WHERE `roles`.`name` = 'Driver' LIMIT 1[0m
+  [1m[35mUser Load (0.1ms)[0m  SELECT id,email AS name FROM `users` WHERE `users`.`role_id` = 2
+Creating scope :search. Overwriting existing method Company.search.

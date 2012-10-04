@@ -1,0 +1,64 @@
+<%= form_for @agent, :url => join_agent_path(@agent), :html => {:class => "form-vertical"}, :remote => true do |f| %>
+  <fieldset>
+    <legend><%= t(:button_add_new_company) %></legend>
+  </fieldset>
+  Please select a companies from the existing list
+  <br />
+  <div class="row">
+    <div class="span4">
+      <div class="well">
+        <ul class="listSelect" id="agents">
+        </ul>
+      </div>
+    </div>
+    <div class="span4">
+      <div class="well">
+        <ul class="listSelect" id="selected_agents">
+        </ul>
+      </div>      
+    </div>
+  </div>
+  <br clear=all />
+  <footer id='dialog-footer'>
+    <div class="controls pull-right">
+      <%= f.submit t(:button_save), :class => "btn btn-primary", 'data-loading-text' => t(:button_saving) %>
+      <a href="#" class="btn" onclick="$.colorbox.close(); return false;"><%= t(:button_cancel) %></a>
+    </div>
+  </footer>
+<% end %>
+
+<script type="text/javascript">
+  $('form').submit(function(){
+    $('#agent_submit').button('loading');
+  })
+
+  $.get('<%= get_companies_companies_path(:json) %>',{"agent_id":<%= @agent.id %>}, function(data){
+    $.each(data,function(idx,item){
+      $("#agents_row").tmpl(item.data.obj).appendTo("#agents");
+    });
+  })
+
+  function addAgent(id) {
+    $('#agent1_'+id).hide();
+    $("#agent_template").tmpl({"id":id,"name":$('#agent1_'+id+' a').html()}).appendTo("#selected_agents");
+  }
+
+  function removeAgent(id) {
+    $('#agent_'+id).remove()
+    $('#agent1_'+id).show();
+  }
+
+</script>
+
+<script id="agents_row" type="text/x-jquery-tmpl">
+<li id="agent1_${id}">
+  <a href="#" onclick="addAgent(${id}); return false;">${name}</a>
+</li>
+</script>
+
+<script id="agent_template" type="text/x-jquery-tmpl">
+<li id="agent_${id}">
+  <a href="#" class="btn" onclick="removeAgent(${id}); return false;"><i class="icon-remove"></i>${name}</a>
+  <input type="hidden" name="company_ids[]" value="${id}" />
+</li>
+</script>
