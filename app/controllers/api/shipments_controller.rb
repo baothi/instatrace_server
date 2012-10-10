@@ -49,10 +49,10 @@ class Api::ShipmentsController < Api::ApiController
   
 protected
   
-  def create_image(data, name)
-    encoded_img = data.sub('data:image/png;base64,', '')
+  def create_image(data, name)    
+    encoded_img = data.sub('data:image/bmp;base64,', '').sub('data:image/png;base64,', '')    
     io = FilelessIO.new(Base64.decode64(encoded_img))
-    io.original_filename = "#{name}_#{rand(1000000)}.jpg"
+    io.original_filename = "#{name}_#{rand(1000000)}.jpg"    
     return io 
   end
   
