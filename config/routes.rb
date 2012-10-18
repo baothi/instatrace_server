@@ -16,10 +16,12 @@ Instatrace::Application.routes.draw do
 
   resources :shipments do
     resources :milestones
+    resources :pieces
     post :upload_edi, :on => :collection
   end
   resources :notifications
   resources :milestones
+  resources :pieces
 
   resources :agents do
     resources :users
@@ -81,6 +83,7 @@ Instatrace::Application.routes.draw do
     post '/shipment/mass_update' =>"shipments#mass_update"
 
     post '/driver/locations' => "locations#create"
+    post '/shipment/post_shipment' =>"shipments#post_shipment"
   end
 
    match '*path' => "shipments#index"
