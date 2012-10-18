@@ -23,8 +23,8 @@
             <%= f.text_field :hawb, :class => :hawb %><span class="error"></span>
           </div><div class="span1"></div>
           <div class="span3">
-            <%= f.label :ship, t(:label_ship_date) %>
-            <%= f.text_field :ship, :class => "datepicker" %>
+            <%= f.label :ship_date, t(:label_ship_date) %>
+            <%= f.text_field :ship_date, :class => "datepicker" %>
           </div><div class="span1"></div>
           <div class="span2">
             <%= f.label :origin, t(:label_origin_city) %>
@@ -41,8 +41,8 @@
             <%= f.text_field :mawb, :class => :hawb %><span class="error"></span>
           </div><div class="span1"></div>
           <div class="span3">
-            <%= f.label :delivery, t(:label_delivery_date) %>
-            <%= f.text_field :delivery, :class => "datepicker" %>
+            <%= f.label :delivery_date, t(:label_delivery_date) %>
+            <%= f.text_field :delivery_date, :class => "datepicker" %>
           </div><div class="span1"></div>
           <div class="span2">
             <%= f.label :destination, t(:label_destination) %>
@@ -73,6 +73,15 @@
   </div>
 </div>
 
+<div class="simple">
+   
+
+
+
+
+
+</div>
+
 <div class="clearfix"></div>
 <br />
 <% if can?(:create, Shipment) %>
@@ -101,8 +110,8 @@
         <td>
           <%= link_to ship.hawb_with_scac, shipment_path(ship.hawb), :class => 'link_bold' %>
         </td>
-        <td><%= ship.ship if ship.ship %> </td> 
-        <td><%= ship.delivery if ship.delivery %></td>
+        <td><%= ship.ship_date if ship.ship_date %> </td> 
+        <td><%= ship.delivery_date if ship.delivery_date %></td>
         <td><%= ship.current_status %></td>
         <td><%= ship.origin %></td>
         <td><%= ship.destination %></td>

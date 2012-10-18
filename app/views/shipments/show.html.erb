@@ -30,7 +30,7 @@
         </tr>
         <tr>
           <td valign="top"><%= number_with_delimiter(@shipment.weight.to_i) %></td>
-          <td valign="top"><%= number_with_delimiter(@shipment.pieces.to_i) %></td>
+          <td valign="top"><%= number_with_delimiter(@shipment.pieces_total.to_i) %></td>
           <td valign="top"><%= @shipment.delivery.to_date rescue nil %></td>
         </tr>
       </table>
@@ -44,12 +44,12 @@
     <td>
       <div class="sub-header" style="margin-right:6px;"><%= t(:text_ship_from) %></div>
       <h3><%= @shipment.shipper %></h3>
-      <%= @shipment.origin %>
+      <%= raw @shipment.origin %>
     </td>
     <td>
       <div class="sub-header" style="margin-left:6px;"><%= t(:text_ship_to) %></div>
       <h3><%= @shipment.consignee %></h3>
-      <%= @shipment.destination %>
+      <%= raw @shipment.destination %>
     </td>
   </tr>
   <tr>

@@ -8,8 +8,8 @@
         <%= form.text_field :service_level, :class => 'span4' %>
         <%= label_tag :mawb, t(:column_mawb), :class => 'control-label' %>
         <%= form.text_field :mawb, :class => 'span4' %>
-        <%= label_tag :pieces, t(:column_pieces), :class => 'control-label' %>
-        <%= form.text_field :pieces, :class => 'span4' %>
+        <%= label_tag :pieces_total, t(:column_pieces), :class => 'control-label' %>
+        <%= form.text_field :pieces_total, :class => 'span4' %>
         <%= label_tag :weight, t(:column_weight), :class => 'control-label' %>
         <%= form.text_field :weight, :class => 'span4' %>
         <%= label_tag :origin, t(:column_origin), :class => 'control-label' %>
@@ -26,10 +26,10 @@
         <%= form.text_field :shipper, :class => 'span4' %>
         <%= label_tag :consignee, t(:column_consignee), :class => 'control-label' %>
         <%= form.text_field :consignee, :class => 'span4' %>
-        <%= label_tag :ship, t(:column_ship_date), :class => 'control-label' %>
-        <%= form.text_field :ship,  :value => Date.today, :class => 'span4 datepicker' %>
-        <%= label_tag :delivery, t(:column_delivery_date), :class => 'control-label' %>
-        <%= form.text_field :delivery, :value  => Date.today, :class => 'span4 datepicker' %>        
+        <%= label_tag :ship_date, t(:column_ship_date), :class => 'control-label' %>
+        <%= form.text_field :ship_date,  :value => Date.today, :class => 'span4 datepicker' %>
+        <%= label_tag :delivery_date, t(:column_delivery_date), :class => 'control-label' %>
+        <%= form.text_field :delivery_date, :value  => Date.today, :class => 'span4 datepicker' %>        
       </div>
     </div>
   </div>

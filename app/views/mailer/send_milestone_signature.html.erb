@@ -2,7 +2,7 @@
   Your shipment
   <strong><%= @milestone.shipment.hawb %></strong>
   of
-  <strong><%= number_with_delimiter(@milestone.shipment.pieces) %></strong>
+  <strong><%= number_with_delimiter(@milestone.shipment.pieces_total) %></strong>
   pcs weighting
   <strong><%= number_with_delimiter(@milestone.shipment.weight.to_i) %> </strong>
   lbs. from

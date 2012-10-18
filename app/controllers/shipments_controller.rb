@@ -38,10 +38,10 @@ class ShipmentsController < ApplicationController
     @shipment = Shipment.new
   end
 
-  def create
+  def create    
     @shipment = Shipment.new params[:shipment]
-    @shipment.ship = Date.strptime(params[:shipment][:ship], '%m/%d/%Y') rescue nil
-    @shipment.delivery = Date.strptime(params[:shipment][:delivery], '%m/%d/%Y') rescue nil
+    @shipment.ship_date = Date.strptime(params[:shipment][:ship], '%m/%d/%Y') rescue nil
+    @shipment.delivery_date = Date.strptime(params[:shipment][:delivery], '%m/%d/%Y') rescue nil
     respond_with(@shipment) do |format|
       format.js do
         render :update do |page|

@@ -10,11 +10,12 @@ class Shipment < ActiveRecord::Base
   has_many :milestones, :dependent => :destroy
   has_many :drivers, :through => :milestones
   has_and_belongs_to_many :locations
-
+  has_many :pieces, :dependent => :destroy
+  accepts_nested_attributes_for :pieces
   validates :hawb, :presence => true, :uniqueness => {:case_sensitive => false}
 
-  validates_date :ship
-  validates_date :delivery, :allow_blank => true
+  validates_date :ship_date, :allow_blank => true
+  validates_date :delivery_date, :allow_blank => true
 
   scope :none, where('1=2')
 
@@ -78,7 +79,7 @@ class Shipment < ActiveRecord::Base
   
   def as_json(options={})
     hash = { :shipment_id => shipment_id,
-      :pieces => pieces,
+      :pieces_total => pieces,
       :weight => weight,
       :pick_up => [origin, shipper].delete_if{ |field| field.nil? || field.blank?}.join(" - "),
       :destination => [destination, consignee].delete_if{ |field| field.nil? || field.blank?}.join(" - "),
@@ -89,16 +90,18 @@ class Shipment < ActiveRecord::Base
     if options && options.has_key?(:addShip)
       hash = serializable_hash(options)
       hash[:hawb_with_scac] = self.hawb_with_scac
-      hash[:ship] = self.ship.to_s
-      hash[:delivery] = self.delivery.to_s
+      hash[:ship_date] = self.ship.to_s
+      hash[:delivery_date] = self.delivery.to_s
       hash[:current_status] = self.current_status
     end
     return hash
   end
 
   def last_location
+    
     milestone = self.milestones.order("updated_at DESC").where('address IS NOT NULL').first
     location = self.locations.order("updated_at DESC").first
+
     if milestone == nil and location == nil
       return '-'
     end
