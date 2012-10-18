@@ -2,7 +2,7 @@
 # module I18n; def self.t(id); '~'; end; end
 
 class ApplicationController < ActionController::Base
-  APPLICATION_VERSION = '1.1.23'
+  APPLICATION_VERSION = '1.1.24'
 
   protect_from_forgery
 
