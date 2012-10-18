@@ -23,15 +23,15 @@ class Api::ShipmentsController < Api::ApiController
         
         @shipment.origin =  params[:shipment][:origin_address1] 
         if params[:shipment][:origin_address2] 
-           @shipment.origin << "<br/>" + params[:shipment][:origin_address2] + "<br/>"
+           @shipment.origin += "<br/>" + params[:shipment][:origin_address2] + "<br/>"
         end       
-        @shipment.origin << params[:shipment][:origin_city] + ", " + params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code] 
+        @shipment.origin += params[:shipment][:origin_city] + ", " + params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code] 
 
         @shipment.destination = params[:shipment][:dest_address1] 
         if params[:shipment][:dest_address2]
-           @shipment.destination << "<br/>" + params[:shipment][:dest_address2] + "<br/>" 
+           @shipment.destination += "<br/>" + params[:shipment][:dest_address2] + "<br/>" 
         end 
-        @shipment.destination << params[:shipment][:dest_city] << ", " << params[:shipment][:dest_state]   <<  " "  <<   params[:shipment][:dest_zip_postal_code] 
+        @shipment.destination += params[:shipment][:dest_city] +  ", " +  params[:shipment][:dest_state]  +  " "  +    params[:shipment][:dest_zip_postal_code] 
 
         @shipment.ship_date = Date.strptime(params[:shipment][:ship_date], '%Y-%m-%d %H:%M:%S') rescue nil
         @shipment.delivery_date = Date.strptime(params[:shipment][:delivery_date], '%Y-%m-%d %H:%M:%S') rescue nil          
