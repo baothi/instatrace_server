@@ -6,10 +6,10 @@
   pcs weighting
   <strong><%= number_with_delimiter(@milestone.shipment.weight.to_i) %> </strong>
   lbs. from
-  <strong><%= @milestone.shipment.origin %> </strong>
+  <strong><%= raw @milestone.shipment.origin %> </strong>
   <% unless @milestone.shipment.destination.blank? %>
     to
-	  <strong><%= @milestone.shipment.destination.to_s %></strong>
+	  <strong><%= raw @milestone.shipment.destination.to_s %></strong>
 	<% end %>
   has the following status:
 </p>
