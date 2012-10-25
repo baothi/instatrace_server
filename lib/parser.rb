@@ -33,8 +33,8 @@ class Parser
     end
     self.data = EDITransaction.new(options[:data] || IO.read(files_path))
     raise 'Data is not defined.' if self.data.nil?
-    self.spec = YAML::load(File.open(File.join(Rails.root, "lib", "parser", "cargo_spec.yml")))
-    self.data.actions.each {|a| create_shipment(a) }
+    self.spec = YAML::load(File.open(File.join(Rails.root, "lib", "parser", "cargo_spec.yml")))    
+    self.data.actions.each {|a| create_shipment(a) if a}
   rescue => e
     @errors << {
       :shipment_id => 'NA',
@@ -53,7 +53,7 @@ class Parser
     b2 = action.find{|d| d.first.eql? "B2"}
 
     return if action.empty? || !b10 && !b2
-debugger
+
     if b10 
       hawb = b10[1][3..-1]
       shipment_id = b10[2]
@@ -66,7 +66,7 @@ debugger
     
     shipment = Shipment.find_or_initialize_by_hawb hawb
     shipment.shipment_id = shipment_id
-    shipment.ship = data.ship
+    shipment.ship_date = data.ship
     shipment.carrier_scac_code = carrier_scac_code
     
     # SH Ship From Information, shipper
@@ -98,16 +98,25 @@ debugger
 
     at7 = action.find{|d| d[0] == "AT7"}
     if at7
-      shipment.delivery = Time.parse(at7[5] + at7[6]) if at7[1] == 'D1'
+      shipment.delivery_date = Time.parse(at7[5] + at7[6]) if at7[1] == 'D1'
     else 
-      shipment.delivery = nil
+      shipment.delivery_date = nil
     end
       
     
     at8 = action.find{|d| d.first.eql? "AT8"}
-    shipment.weight = at8[3]
-    shipment.pieces = at8[4].to_i + at8[5].to_i
-    unless shipment.save
+    
+    shipment.weight = at8[3] if at8[3]
+    if at8[4]
+      shipment.pieces_total = at8[4].to_i      
+    end
+
+    if at8[5]
+      shipment.pieces_total += at8[5].to_i
+    end
+        
+    unless shipment.save!
+      
       @errors << {
         :shipment_id => shipment.shipment_id,
         :message => shipment.errors.full_messages.join("; "),
