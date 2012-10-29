@@ -113,12 +113,12 @@ class Shipment < ActiveRecord::Base
     if location == nil or location.updated_at == nil
       return milestone.address ? milestone.address: '-'
     end
-
-    if milestone.updated_at > location.updated_at
-      return milestone.address ? milestone.address: '-'
-    else
-      return location.address ? location.address: '-'
-    end
+    return milestone.address ? milestone.address: '-'
+    # if milestone.updated_at > location.updated_at            
+    #   return milestone.address ? milestone.address: '-'
+    # else      
+    #   return location.address ? location.address: '-'
+    # end
   end
   
 private
