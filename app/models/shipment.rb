@@ -113,7 +113,7 @@ class Shipment < ActiveRecord::Base
     if location == nil or location.updated_at == nil
       return milestone.address ? milestone.address: '-'
     end
-    return milestone.driver.locations.first ? milestone.driver.locations.first.address: '-'
+    return milestone.driver.locations.order("updated_at DESC").first ? milestone.driver.locations.order("updated_at DESC").first.address: '-'
     # if milestone.updated_at > location.updated_at            
     #   return milestone.address ? milestone.address: '-'
     # else      
