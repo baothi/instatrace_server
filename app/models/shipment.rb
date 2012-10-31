@@ -99,26 +99,38 @@ class Shipment < ActiveRecord::Base
 
   def last_location
     
-    milestone = self.milestones.order("updated_at DESC").where('address IS NOT NULL').first
-    location = self.locations.order("updated_at DESC").first
+    #milestone = self.milestones.order("updated_at DESC").where('address IS NOT NULL').first
+    #location = self.locations.order("updated_at DESC").first
+   
+    # if milestone == nil and location == nil
+    #   return '-'
+    # end
 
-    if milestone == nil and location == nil
+    # if milestone == nil or  milestone.updated_at == nil
+    #   return location.address ? location.address: '-'
+    # end
+
+    # if location == nil or location.updated_at == nil
+    #   return milestone.address ? milestone.address: '-'
+    # end
+    
+    # if milestone.updated_at > location.updated_at            
+    #    return milestone.address ? milestone.address: '-'
+    # else      
+    #    return location.address ? location.address: '-'
+    # end
+
+    
+    milestone = self.milestones.order("updated_at DESC").first
+    #Get last location
+    location = milestone.driver.locations.order("updated_at DESC").first
+    
+    if location && Geocoder.search("10.85625675,106.6316426")[0]            
+      return Geocoder.search("#{location.latitude},#{location.longitude}")[0].address
+    else
       return '-'
     end
 
-    if milestone == nil or  milestone.updated_at == nil
-      return location.address ? location.address: '-'
-    end
-
-    if location == nil or location.updated_at == nil
-      return milestone.address ? milestone.address: '-'
-    end
-    return milestone.driver.locations.order("updated_at DESC").first ? milestone.driver.locations.order("updated_at DESC").first.address: '-'
-    # if milestone.updated_at > location.updated_at            
-    #   return milestone.address ? milestone.address: '-'
-    # else      
-    #   return location.address ? location.address: '-'
-    # end
   end
   
 private
