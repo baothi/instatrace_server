@@ -2,7 +2,7 @@ class Api::LocationsController < Api::ApiController
 
   def create
 
-    if location = Location.where(:driver_id => current_user).order("updated_at").first
+    if location = Location.where(:driver_id => current_user).order("updated_at DESC").first
       location.address = '-'
       location.update_attributes(params[:location])
       location.touch
