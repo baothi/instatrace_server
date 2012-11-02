@@ -120,30 +120,33 @@ class Shipment < ActiveRecord::Base
     #    return location.address ? location.address: '-'
     # end
 
+    result = Hash.new
+
     stop_tracking_actions = ["back_at_base","delivered","tendered_to_carrier"]
     milestone = self.milestones.order("updated_at DESC").where('action IS NOT NULL').first
     
 
-    if milestone      
+    if milestone            
        if stop_tracking_actions.include? milestone.action.to_s       
-            return Geocoder.search("#{milestone.latitude},#{milestone.longitude}")[0].address
+            
+            result["geo"] = Geocoder.search("#{milestone.latitude},#{milestone.longitude}")[0]
+            result["updated_at"] = milestone.updated_at   
+
        else 
             #Get last location of driver
             location = milestone.driver.locations.order("updated_at DESC").first
             
             if location && Geocoder.search("#{location.latitude},#{location.longitude}")[0]            
-              return Geocoder.search("#{location.latitude},#{location.longitude}")[0].address
+              result["geo"] = Geocoder.search("#{location.latitude},#{location.longitude}")[0]
+              result["updated_at"] = location.updated_at  
+              
             else
-              return '-'
+              result["geo"] = '-'
             end
        end   
     end
 
-    return '-'
-    
-
-   
-
+    return result
   end
   
 private
