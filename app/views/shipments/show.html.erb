@@ -58,7 +58,7 @@
   </tr>
 </table>
 
-<%= t(:last_location) %>: <%= @shipment.last_location["geo"].address.split( /,/, 2 )[1] rescue '-'  %> <%= link_to "<i class='icon-globe'></i>".html_safe, google_location_url(@shipment.last_location["geo"].latitude,@shipment.last_location["geo"].longitude), :title => t(:title_goto_direction), :target => :blank %>, <%= @shipment.last_location["updated_at"]  %>
+<%= t(:last_location) %>: <%= @shipment.last_location["geo"].address.split( /,/, 2 )[1] rescue '-'  %>  <% if @shipment.last_location["geo"] %> <%= link_to "<i class='icon-globe'></i>".html_safe, google_location_url(@shipment.last_location["geo"].latitude,@shipment.last_location["geo"].longitude), :title => t(:title_goto_direction), :target => :blank %>, <%= @shipment.last_location["updated_at"]  %> <% end %>
 <br />
 
 <div class="header-container">
@@ -71,7 +71,7 @@
     <th style="width:150px;"><%= t(:column_update_date_and_time) %></th>
     <th><%= t(:column_updated_by) %></th>
     <th style="width:150px;"><%= t(:column_status) %></th>
-    <th style="width:220px;"><%= t(:column_location) %></th>
+    <th style="width:220px;text-align:left;"><%= t(:column_location) %></th>
     <th><%= t(:column_signature) %></th>
     <th><%= t(:column_damage) %></th>
     <th><%= t(:column_documents) %></th>
