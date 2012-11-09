@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120913103404) do
+ActiveRecord::Schema.define(:version => 20121018051754) do
 
   create_table "active_admin_comments", :force => true do |t|
     t.integer  "resource_id",   :null => false
@@ -49,6 +49,7 @@ ActiveRecord::Schema.define(:version => 20120913103404) do
     t.string   "zip"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "company_type_id"
     t.string   "created_by"
     t.string   "updated_by"
   end
@@ -81,6 +82,8 @@ ActiveRecord::Schema.define(:version => 20120913103404) do
     t.integer "shipment_id"
   end
 
+  add_index "locations_shipments", ["location_id"], :name => "index_locations_shipments_on_location_id"
+
   create_table "milestone_documents", :force => true do |t|
     t.integer  "milestone_id", :null => false
     t.string   "name",         :null => false
@@ -93,17 +96,22 @@ ActiveRecord::Schema.define(:version => 20120913103404) do
     t.integer  "driver_id"
     t.integer  "shipment_id"
     t.string   "action"
-    t.string   "location"
     t.boolean  "damaged"
     t.text     "damage_desc"
     t.boolean  "completed"
     t.boolean  "public"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.float    "latitude",                                  :default => 0.0
-    t.float    "longitude",                                 :default => 0.0
-    t.decimal  "timezone",    :precision => 2, :scale => 1
+    t.string   "location"
+    t.float    "latitude",    :limit => 10,                               :default => 0.0
+    t.float    "longitude",   :limit => 10,                               :default => 0.0
+    t.decimal  "timezone",                  :precision => 2, :scale => 1
+    t.string   "address"
   end
+
+  add_index "milestones", ["action"], :name => "index_milestones_on_action"
+  add_index "milestones", ["driver_id"], :name => "index_milestones_on_driver_id"
+  add_index "milestones", ["shipment_id"], :name => "index_milestones_on_shipment_id"
 
   create_table "notifications", :force => true do |t|
     t.integer  "user_id"
@@ -128,6 +136,16 @@ ActiveRecord::Schema.define(:version => 20120913103404) do
     t.integer "permission_id"
   end
 
+  create_table "pieces", :force => true do |t|
+    t.integer  "pieces"
+    t.float    "weight"
+    t.float    "length"
+    t.float    "height"
+    t.integer  "shipment_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "roles", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -146,22 +164,41 @@ ActiveRecord::Schema.define(:version => 20120913103404) do
 
   create_table "shipments", :force => true do |t|
     t.string   "shipment_id"
-    t.integer  "pieces"
+    t.integer  "pieces_total"
     t.float    "weight"
     t.string   "origin"
     t.string   "shipper"
-    t.datetime "ship"
+    t.datetime "ship_date"
     t.string   "destination"
     t.string   "consignee"
-    t.datetime "delivery"
+    t.datetime "delivery_date"
     t.string   "service_level"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "hawb"
     t.string   "mawb"
-    t.string   "carrier_scac_code",  :limit => 15
-    t.string   "receiver_scac_code", :limit => 15
+    t.string   "carrier_scac_code",                 :limit => 15
+    t.string   "receiver_scac_code",                :limit => 15
+    t.string   "origin_address1"
+    t.string   "origin_address2"
+    t.string   "origin_city"
+    t.string   "origin_state"
+    t.string   "origin_zip_postal_code"
+    t.string   "origin_country"
+    t.string   "dest_address1"
+    t.string   "dest_address2"
+    t.string   "dest_city"
+    t.string   "dest_state"
+    t.string   "dest_zip_postal_code"
+    t.string   "dest_country"
+    t.float    "length"
+    t.float    "height"
+    t.string   "service_level_code",                :limit => 2
+    t.string   "pick_up_and_delivery_instructions", :limit => 2
+    t.string   "shipment_types",                    :limit => 2
   end
+
+  add_index "shipments", ["hawb"], :name => "index_shipments_on_hawb"
 
   create_table "signatures", :force => true do |t|
     t.integer  "milestone_id"

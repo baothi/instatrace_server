@@ -152,7 +152,12 @@ ActiveAdmin.register Shipment do
         shipment.origin +=  "<br/>" + params[:shipment][:origin_address2] + "<br/>"        
       end       
 
-      shipment.origin += params[:shipment][:origin_city]
+      if shipment.origin
+         shipment.origin += params[:shipment][:origin_city]
+      else
+         shipment.origin = params[:shipment][:origin_city]
+      end
+      
       if params[:shipment][:origin_state] && !params[:shipment][:origin_state].blank?
         shipment.origin += ", "
       end  
@@ -165,8 +170,13 @@ ActiveAdmin.register Shipment do
       
       if params[:shipment][:dest_address2] && !params[:shipment][:dest_address2].blank?
         shipment.destination +=  "<br/>" + params[:shipment][:dest_address2] + "<br/>"
-      end               
-      shipment.destination +=  params[:shipment][:dest_city] 
+      end    
+      if shipment.destination
+         shipment.destination +=  params[:shipment][:dest_city] 
+      else
+         shipment.destination =  params[:shipment][:dest_city] 
+      end
+      
       if params[:shipment][:dest_state] && !params[:shipment][:dest_state].blank?
          shipment.destination += ", "
       end
