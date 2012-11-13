@@ -126,16 +126,18 @@ class Shipment < ActiveRecord::Base
     milestone = self.milestones.order("updated_at DESC").where('action IS NOT NULL').first
     
     if milestone            
-       if stop_tracking_actions.include? milestone.action.to_s            
+       if stop_tracking_actions.include? milestone.action.to_s
+         
             result["geo"] = Geocoder.search("#{milestone.latitude},#{milestone.longitude}")[0]
             result["updated_at"] = milestone.created_time_with_timezone
        else        
+         
             #Get last location of driver
             location = milestone.driver.locations.order("updated_at DESC").first if milestone.driver
             
             if location && Geocoder.search("#{location.latitude},#{location.longitude}")[0]            
               result["geo"] = Geocoder.search("#{location.latitude},#{location.longitude}")[0]
-              result["updated_at"] = location.created_time_with_timezone                
+              result["updated_at"] = location.updated_at                
             end
        end   
     end
