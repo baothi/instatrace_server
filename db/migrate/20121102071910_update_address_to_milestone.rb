@@ -2,15 +2,12 @@ class UpdateAddressToMilestone < ActiveRecord::Migration
   def self.up
   	milestones = Milestone.where("latitude != '0.000000' AND longitude != '0.000000' AND shipment_id in (SELECT id FROM shipments)")
   		
-   	milestones.each do |milestone| 		
+   	milestones.each do |milestone| 	
+      puts "====Start milestone: #{milestone.id}, lat: #{milestone.latitude}, long: #{milestone.longitude}"	
 		  geo = Geocoder.search("#{milestone.latitude},#{milestone.longitude}")[0]
-         
-		  if geo		  	
-        if geo.data["address_components"] &&  geo.data["address_components"][5] && geo.data["address_components"][5]["short_name"]
-          milestone.address = geo.city + ", " + geo.data["address_components"][5]["short_name"]
-        else
-          milestone.address = geo.city + ", " + geo.state
-        end
+
+		  if geo && geo.city && geo.state_code
+        milestone.address = geo.city + ", " + geo.state_code
 		  	 
         puts "==============Update milestone_id: #{milestone.id} with #{milestone.address}=================="
   		  milestone.save       

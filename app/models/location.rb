@@ -19,10 +19,14 @@ class Location < ActiveRecord::Base
     end
   end
    def created_time_with_timezone    
-    unless timezone.nil?
-      updated_at.in_time_zone(timezone) if updated_at
+    zone = RestClient.get("http://api.geonames.org/timezone?lat=#{self.latitude}&lng=#{self.longitude}&username=instatrace")
+
+    timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f    
+
+    unless timeshift.nil?
+      updated_at.in_time_zone(timeshift) if updated_at
     else
-      updated_at
+      "Timezone not found or reached limit reqests"
     end
   end
 end

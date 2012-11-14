@@ -124,7 +124,7 @@ class Shipment < ActiveRecord::Base
 
     stop_tracking_actions = ["back_at_base","delivered","tendered_to_carrier"]
     milestone = self.milestones.order("updated_at DESC").where('action IS NOT NULL').first
-    
+
     if milestone            
        if stop_tracking_actions.include? milestone.action.to_s
          
@@ -137,7 +137,7 @@ class Shipment < ActiveRecord::Base
             
             if location && Geocoder.search("#{location.latitude},#{location.longitude}")[0]            
               result["geo"] = Geocoder.search("#{location.latitude},#{location.longitude}")[0]
-              result["updated_at"] = location.updated_at                
+              result["updated_at"] = location.created_time_with_timezone                
             end
        end   
     end

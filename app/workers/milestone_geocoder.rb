@@ -5,13 +5,8 @@ class MilestoneGeocoder
     milestone = Milestone.find(milstone_id)
     geo = Geocoder.search("#{milestone.latitude},#{milestone.longitude}")[0]  	
     
-    if geo
-      address = ''
-      if geo.data["address_components"] &&  geo.data["address_components"][5] && geo.data["address_components"][5]["short_name"]
-        address = geo.city + ", " + geo.data["address_components"][5]["short_name"]
-      else
-        address = geo.city + ", " + geo.state
-      end
+    if geo && geo.city && geo.state_code
+      address = geo.city + ", " + geo.state_code
         
       milestone.update_attribute :address, address
     end
