@@ -13,9 +13,13 @@ class Api::ShipmentsController < Api::ApiController
            params[:shipment][:pieces_attributes] = params[:shipment][:pieces]
            params[:shipment].delete :pieces           
         end 
+        #truncate leading 3 digits from hawb
+        params[:shipment][:hawb] = params[:shipment][:hawb][3..-1]
+        
         @shipment = Shipment.find_by_hawb(params[:shipment][:hawb])
         
         if @shipment            
+            @shipment.pieces.delete_all            
             @shipment.update_attributes(params[:shipment])
         else
            @shipment = Shipment.new params[:shipment]           
