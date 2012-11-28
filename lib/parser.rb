@@ -104,7 +104,7 @@ class Parser
           }
           puts self.errors.last[:full_message]
         end
-        puts "****************Imported Milestone of shipment #ID:#{shipment_id }, HAWB = #{shipment.hawb}, MAWB = #{shipment.hmwb}"
+        puts "****************Imported Milestone of shipment #ID:#{shipment_id }, HAWB = #{shipment.hawb}, MAWB = #{shipment.mawb}"
 
     end#end shipments.each 
            
