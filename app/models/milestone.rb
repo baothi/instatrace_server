@@ -6,7 +6,7 @@ class Milestone < ActiveRecord::Base
   belongs_to :shipment
   belongs_to :driver, :class_name => 'User'
   
-  enum_attr :action, %w(pick-up back_at_base en_route_to_carrier tendered_to_carrier recovered_from_carrier out_for_delivery delivered)
+  enum_attr :action, %w(pick-up back_at_base en_route_to_carrier tendered_to_carrier recovered_from_carrier out_for_delivery delivered completed_unloading/recovered departed_origin_erminal arrived_transfer_terminal departed_transfer_terminal arrived_destination_terminal out_for_delivery)
   
   validates :shipment_id, :driver_id, :action, :presence => {:if => :completed?}  
   validates :latitude, :longitude, :numericality => true, :presence => {:if => :completed?}  

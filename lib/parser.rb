@@ -2,10 +2,15 @@ class Parser
   class EDITransaction
     attr_accessor :data, :actions, :ship
     
-    def initialize(data)
+    def initialize(data, parser_type)
       @data = data
       raise 'File has wrong format' unless self.isa?
-      plain = data.gsub(/~/, '').gsub(/\n/, '~').gsub(/\r/, '').split('~').map{|line| line.split('*')}
+      if parser_type && parser_type == 'milestones'
+        plain = data.gsub(/\r/, '').split('~').map{|line| line.split('*')}
+      else
+        plain = data.gsub(/~/, '').gsub(/\n/, '~').gsub(/\r/, '').split('~').map{|line| line.split('*')}
+      end
+      
       isa = plain.find{|d| d.first.eql? "ISA"}
       self.ship = Time.parse("20" << isa[9] << isa[10])
       until plain.size.zero?
@@ -31,10 +36,20 @@ class Parser
       path = options[:path] || default_files_path
       files_path = File.join(path, options[:file_name])      
     end
-    self.data = EDITransaction.new(options[:data] || IO.read(files_path))
+
+    self.data = EDITransaction.new(options[:data] || IO.read(files_path), options[:parser_type])
     raise 'Data is not defined.' if self.data.nil?
-    self.spec = YAML::load(File.open(File.join(Rails.root, "lib", "parser", "cargo_spec.yml")))    
-    self.data.actions.each {|a| create_shipment(a) if a}
+    self.spec = YAML::load(File.open(File.join(Rails.root, "lib", "parser", "cargo_spec.yml"))) 
+      
+    if options[:parser_type] && options[:parser_type] == 'milestones'
+      user = User.find_by_login('ForwardAir')
+      driver_id = user.id if user
+      self.data.actions.each {|a| create_milestones(a, driver_id, self.spec) if a && driver_id}
+    else
+      self.data.actions.each {|a| create_shipment(a) if a}
+    end
+
+    
   rescue => e
     @errors << {
       :shipment_id => 'NA',
@@ -46,6 +61,53 @@ class Parser
 
   def default_files_path
     File.join(Rails.root, "lib", "parser")    
+  end
+
+  def create_milestones(action, driver_id, status_maps)
+    b10 = action.find{|d| d.first.eql? "B10"}
+    
+    return if action.empty? || !b10 
+    
+    mawb = ''
+    if b10 
+      mawb = b10[1][4..-1]        
+    end
+    
+    shipments = Shipment.where('mawb = ?', mawb)
+
+    return if shipments.nil? || (shipments && shipments.count == 0)
+    shipments.each do |shipment|
+        shipment_id = shipment.id   
+        #Create new milestone
+        milestone = Milestone.new    
+        milestone.shipment_id = shipment_id
+        milestone.driver_id = driver_id
+        milestone.completed = 1    
+        # Default location of Forward Air Inc
+        latitude = 36.1942916
+        longitude = -82.80581699999999
+
+        zone = RestClient.get("http://api.geonames.org/timezone?lat=#{latitude}&lng=#{longitude}&username=instatrace")    
+        milestone.timezone = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
+       
+        at7 = action.find{|d| d[0] == "AT7"}
+        
+        if at7 && at7[1]        
+          milestone.action = status_maps['AT7'][at7[1]]
+        end
+       
+        unless milestone.save!          
+          @errors << {
+            :shipment_id => milestone.shipment_id,
+            :message => milestone.errors.full_messages.join("; "),
+            :full_message => "Milestone with shipment ID: (#{milestone.shipment_id}) was not saved due to next errors: #{milestone.errors.full_messages.join("; ")}"
+          }
+          puts self.errors.last[:full_message]
+        end
+        puts "****************Imported Milestone of shipment #ID:#{shipment_id }, HAWB = #{shipment.hawb}, MAWB = #{shipment.hmwb}"
+
+    end#end shipments.each 
+           
   end
   
   def create_shipment(action)
