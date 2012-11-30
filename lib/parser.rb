@@ -117,9 +117,9 @@ class Parser
             if response.success?
               data = response.to_array(:update_status_response, :update_status_result).first      
               if data == true
-                 puts "*****************SUCCESS Update Status Wordtrak  for Shipemt with HAWB: #{hawb}"
+                 Rails.logger.info "*****************SUCCESS Update Status Wordtrak  for Shipemt with HAWB: #{hawb}"
               else
-                 puts "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                 Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
               end
             end
         end
