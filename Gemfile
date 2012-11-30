@@ -39,4 +39,8 @@ gem "daemons"
 gem 'settingslogic'
 gem "geocoder"
 gem "validates_timeliness", "~> 3.0.14"
+gem "savon"
+
+#gem "passenger"
+#gem "ruby-debug-passenger"
 #gem "debugger"

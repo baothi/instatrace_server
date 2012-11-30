@@ -9,7 +9,7 @@ Instatrace::Application.routes.draw do
   
 
   ActiveAdmin.routes(self)
-
+  resources :settings
   devise_for :users
   # devise_for :users, :only => :registrations
   # devise_for :users, ActiveAdmin::Devise.config

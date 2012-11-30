@@ -104,7 +104,28 @@ class Parser
           }
           puts self.errors.last[:full_message]
         end
-        puts "****************Imported Milestone of shipment #ID:#{shipment_id }, HAWB = #{shipment.hawb}, MAWB = #{shipment.mawb}"
+
+        #Check setting
+        setting = Setting.find_by_name('EnableWTUpdateStatus')
+        if setting && setting.value == '1'           
+            #hawb = 340510 #For testing
+            hawb = shipment.hawb
+            #Call update status service from WordTrak
+            client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
+            response = client.request :update_status, body: {"HandlingStation" => "200", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => "NEW"}
+            
+            if response.success?
+              data = response.to_array(:update_status_response, :update_status_result).first      
+              if data == true
+                 puts "*****************SUCCESS Update Status Wordtrak  for Shipemt with HAWB: #{hawb}"
+              else
+                 puts "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+              end
+            end
+        end
+        
+
+        puts "****************************Imported Milestone of shipment #ID:#{shipment_id }, HAWB = #{shipment.hawb}, MAWB = #{shipment.mawb}"
 
     end#end shipments.each 
            
