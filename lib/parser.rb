@@ -39,12 +39,12 @@ class Parser
 
     self.data = EDITransaction.new(options[:data] || IO.read(files_path), options[:parser_type])
     raise 'Data is not defined.' if self.data.nil?
-    self.spec = YAML::load(File.open(File.join(Rails.root, "lib", "parser", "cargo_spec.yml"))) 
+    forwardair_status = YAML::load(File.open(File.join(Rails.root, "config", "forwardair.yml")))
       
     if options[:parser_type] && options[:parser_type] == 'milestones'
       user = User.find_by_login('ForwardAir')
       driver_id = user.id if user
-      self.data.actions.each {|a| create_milestones(a, driver_id, self.spec) if a && driver_id}
+      self.data.actions.each {|a| create_milestones_forwardair(a, driver_id, forwardair_status) if a && driver_id}
     else
       self.data.actions.each {|a| create_shipment(a) if a}
     end
@@ -63,7 +63,7 @@ class Parser
     File.join(Rails.root, "lib", "parser")    
   end
 
-  def create_milestones(action, driver_id, status_maps)
+  def create_milestones_forwardair(action, driver_id, status_maps)
     b10 = action.find{|d| d.first.eql? "B10"}
     
     return if action.empty? || !b10 
@@ -94,6 +94,7 @@ class Parser
         
         if at7 && at7[1]        
           milestone.action = status_maps['AT7'][at7[1]]
+          milestone.action_code = at7[1]
         end
        
         unless milestone.save!          
@@ -103,27 +104,7 @@ class Parser
             :full_message => "Milestone with shipment ID: (#{milestone.shipment_id}) was not saved due to next errors: #{milestone.errors.full_messages.join("; ")}"
           }
           puts self.errors.last[:full_message]
-        end
-
-        #Check setting
-        setting = Setting.find_by_name('EnableWTUpdateStatus')
-        if setting && setting.value == '1'           
-            #hawb = 340510 #For testing
-            hawb = shipment.hawb
-            #Call update status service from WordTrak
-            client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
-            response = client.request :update_status, body: {"HandlingStation" => "200", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => "NEW"}
-            
-            if response.success?
-              data = response.to_array(:update_status_response, :update_status_result).first      
-              if data == true
-                 Rails.logger.info "*****************SUCCESS Update Status Wordtrak  for Shipemt with HAWB: #{hawb}"
-              else
-                 Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
-              end
-            end
-        end
-        
+        end            
 
         puts "****************************Imported Milestone of shipment #ID:#{shipment_id }, HAWB = #{shipment.hawb}, MAWB = #{shipment.mawb}"
 

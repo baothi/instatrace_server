@@ -1,0 +1,8 @@
+AT7:
+  RT2: pick-up
+  BAB: back_at_base  
+  TND: tendered_to_carrier
+  REC: recovered_from_carrier
+  OFD: out_for_delivery
+  IDL: delivered
+  RT5: en_route_to_carrier
