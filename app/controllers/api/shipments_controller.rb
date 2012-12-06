@@ -74,27 +74,18 @@ class Api::ShipmentsController < Api::ApiController
           end 
           shipment_data['milestone']['driver_id'] = @user.id
           shipment_data['milestone']['damage_desc'] = shipment_data['damage']
+          
+          action_code = ''
+          #Set action_code for new milestone
+          if shipment_data["milestone"]["action"]     
+           #action_code = TRANSPAK_STATUS['AT7'].select {|k,v| v == shipment_data["milestone"]["action"]} 
+           action_code = TRANSPAK_STATUS['AT7'].key(shipment_data["milestone"]["action"])
+           
+           shipment_data["milestone"]["action_code"] = action_code               
+          end 
+          
           milestone = shipment.milestones.create(shipment_data['milestone'])
-          
-          #Check setting
-          setting = Setting.find_by_name('EnableWTUpdateStatus')
-          if setting && setting.value == '1'
-             #hawb = 340510 #For testing
-             hawb = shipment.hawb
-             #Call update status service from WordTrak
-             client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")           
-             response = client.request :update_status, body: {"HandlingStation" => "200", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => "NEW"}
-
-             if response.success?
-               data = response.to_array(:update_status_response, :update_status_result).first      
-               if data == true
-                  Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
-               else
-                  Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
-               end
-             end 
-          end  
-          
+                    
           if  shipment_data['document']
             document = milestone.milestone_documents.build(:doc_type => shipment_data['document']['doc_type'])
             document.name = create_image(shipment_data['document']['name'],'document')
@@ -111,6 +102,26 @@ class Api::ShipmentsController < Api::ApiController
               milestone.damages.create(:photo => create_image(image,"damage"))
             end
           end
+
+           #Check setting
+          setting = Setting.find_by_name('EnableWTUpdateStatus')
+          if setting && setting.value == '1'
+             #hawb = 340510 #For testing
+             hawb = shipment.hawb             
+             #Call update status service from WordTrak
+             client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")           
+             response = client.request :update_status, body: {"HandlingStation" => "", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => action_code}
+
+             if response.success?
+               data = response.to_array(:update_status_response, :update_status_result).first      
+               if data == true
+                  Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+               else
+                  Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+               end
+             end 
+          end
+
         end
       end
       render :json => {:status => true, :message => t('messages.notice.milestone_created_ok')}
