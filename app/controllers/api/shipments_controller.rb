@@ -108,18 +108,21 @@ class Api::ShipmentsController < Api::ApiController
           if setting && setting.value == '1'
              #hawb = 340510 #For testing
              hawb = shipment.hawb             
-             #Call update status service from WordTrak
-             client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")           
-             response = client.request :update_status, body: {"HandlingStation" => "", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => action_code}
-
-             if response.success?
-               data = response.to_array(:update_status_response, :update_status_result).first      
-               if data == true
-                  Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
-               else
-                  Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
-               end
-             end 
+             #Call update status service from WordTrak             
+             begin
+                client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
+                response = client.request :update_status, body: {"HandlingStation" => "", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => action_code} 
+                if response.success?
+                   data = response.to_array(:update_status_response, :update_status_result).first      
+                   if data == true
+                      Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                   else
+                      Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                   end
+                 end
+             rescue Savon::Error => error
+                  Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb} #{error}"
+             end             
           end
 
         end
