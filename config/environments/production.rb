@@ -59,7 +59,7 @@ Instatrace::Application.configure do
   # Only use best-standards-support built into browsers
   config.action_dispatch.best_standards_support = :builtin
   config.log_level = :debug
-  # auto rotate log files, keep 1000 of 5MB each
-  config.logger = Logger.new(config.paths.log.first, 1000,5*1025*1024)
+  # auto rotate log files, keep 10 of 100MB each
+  config.logger = Logger.new(config.paths.log.first, 10,100*1024*1024)
   
 end
