@@ -10,14 +10,13 @@ FILE="/transpak/Instatrace"
 DES="/home/forwardairftp"
 echo "=================Connnecting FTP Forward Air=============="
  
-#mget *.214
+#mdel *.214
 # login to remote server
 ftp -n -i $SERVER <<EOF
 user $USERNAME $PASSWORD
 cd $FILE
 lcd $DES
 mget *.214
-mdel *.214
 
 
 
