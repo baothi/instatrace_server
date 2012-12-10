@@ -22,7 +22,7 @@ namespace :import do
         
     parse_files.each do |file|
       Parser.new(:file_name => file, :path => '',:parser_type => 'milestones')
-      FileUtils.mv(file, forwardair_path + "/old/" + Pathname.new(file).basename.to_s)
+      FileUtils.mv(file, forwardair_path + Pathname.new(file).basename.to_s)
       puts "==============================Updated Milestones: #{file}"
     end
   end
