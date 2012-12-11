@@ -17,6 +17,7 @@ user $USERNAME $PASSWORD
 cd $FILE
 lcd $DES
 mget *.214
+mdel *.214
 
 
 

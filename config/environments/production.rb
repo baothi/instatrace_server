@@ -60,6 +60,6 @@ Instatrace::Application.configure do
   config.action_dispatch.best_standards_support = :builtin
   config.log_level = :debug
   # auto rotate log files, keep 10 of 100MB each
-  config.logger = Logger.new(config.paths.log.first, 10,100*1024*1024)
+  config.logger = Logger.new(config.paths.log.first, 5,200*1024*1024)
   
 end
