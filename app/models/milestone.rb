@@ -25,11 +25,30 @@ class Milestone < ActiveRecord::Base
   end
 
   def created_time_with_timezone
-    unless timezone.nil?
-      created_at.in_time_zone(timezone) if created_at
-    else
-      "Waiting for synchronization..."
+    if timezone.nil?      
+       milestone = Milestone.find(self.id)
+       zone = RestClient.get("http://api.geonames.org/timezone?lat=#{milestone.latitude}&lng=#{milestone.longitude}&username=instatrace")
+       timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
+       milestone.update_attribute(:timezone, timeshift)     
     end
+    created_at.in_time_zone(timezone) if created_at   
+        
+  end
+
+  def create_address_with_location
+      if address.nil?
+         milestone = Milestone.find(self.id)
+         geo = Geocoder.search("#{milestone.latitude},#{milestone.longitude}")[0]    
+          
+         if geo && geo.city && geo.state_code
+           address = geo.city + ", " + geo.state_code             
+           milestone.update_attribute :address, address
+           address
+           puts '=================milestone id #{milestone.id}'           
+         end
+      else
+        self.address
+      end      
   end
 
   def should_update_timezone
