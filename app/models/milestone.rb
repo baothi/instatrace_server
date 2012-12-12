@@ -25,14 +25,20 @@ class Milestone < ActiveRecord::Base
   end
 
   def created_time_with_timezone
-    if timezone.nil?      
-       milestone = Milestone.find(self.id)
+    milestone = Milestone.find(self.id)
+    #Resque doesn't update timezone in sometime,therefore, need to update timezone of milestone again when the user views milestone list
+    if timezone.nil? && milestone.longitude != '0.0' &&  milestone.latitude != '0.0'             
        zone = RestClient.get("http://api.geonames.org/timezone?lat=#{milestone.latitude}&lng=#{milestone.longitude}&username=instatrace")
        timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
-       milestone.update_attribute(:timezone, timeshift)     
-    end
-    created_at.in_time_zone(timezone) if created_at   
-        
+       milestone.update_attribute(:timezone, timeshift) 
+       created_at.in_time_zone(timezone) if timeshift
+
+    elsif timezone
+       created_at.in_time_zone(timezone) if created_at   
+     else
+      #For case Forward Air integration
+       created_at 
+    end        
   end
 
   def create_address_with_location

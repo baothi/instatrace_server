@@ -84,17 +84,29 @@ class Parser
         milestone.driver_id = driver_id
         milestone.completed = 1    
         # Default location of Forward Air Inc
-        latitude = 36.1942916
-        longitude = -82.80581699999999
+        #latitude = 36.1942916
+        #longitude = -82.80581699999999
 
-        zone = RestClient.get("http://api.geonames.org/timezone?lat=#{latitude}&lng=#{longitude}&username=instatrace")    
-        milestone.timezone = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
+        #zone = RestClient.get("http://api.geonames.org/timezone?lat=#{latitude}&lng=#{longitude}&username=instatrace")    
+        #milestone.timezone = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
        
         at7 = action.find{|d| d[0] == "AT7"}
         
         if at7 && at7[1]        
           milestone.action = status_maps['AT7'][at7[1]]
           milestone.action_code = at7[1]
+        end        
+
+        utc_offset = nil
+        if at7 && at7[7]           
+           utc_offset = -6.0 if at7[7] == 'CT'
+           utc_offset = -5.0 if at7[7] == 'ET'
+           utc_offset = -8.0 if at7[7] == 'PT'
+           utc_offset = -5.0 if at7[7] == 'LT'
+        end
+
+        if at7 && at7[5] && at7[6]            
+           milestone.created_at =DateTime.parse(at7[5] + at7[6]).in_time_zone(ActiveSupport::TimeZone[utc_offset].name)
         end
        
         unless milestone.save!          
