@@ -13,9 +13,11 @@ ActiveAdmin.register Shipment do
     column(:origin) { |s| raw "#{s.origin}" }       
     column(:destination) { |s| raw "#{s.destination}" }  
     column :shipper
-    column :consignee
+    column :consignee   
     column :ship_date
     column :delivery_date
+    column :dangerous_goods
+    column :special_instructions
     column "Registered", :created_at
   end
 
@@ -31,9 +33,11 @@ ActiveAdmin.register Shipment do
       row (:origin) { raw "#{s.origin}"}  
       row (:destination) {raw "#{s.destination}"}  
       row :shipper
-      row :consignee
+      row :consignee     
       row :ship_date
       row :delivery_date
+      row :special_instructions
+      row :dangerous_goods
     end
     active_admin_comments
   end
@@ -53,12 +57,14 @@ ActiveAdmin.register Shipment do
       f.input :origin_city
       f.input :origin_state
       f.input :origin_zip_postal_code
+      f.input :origin_country
       #f.input :destination
       f.input :dest_address1
       f.input :dest_address2
       f.input :dest_city
       f.input :dest_state
       f.input :dest_zip_postal_code
+      f.input :dest_country
       f.input :shipper
       f.input :consignee
       f.input :ship_date
@@ -161,7 +167,7 @@ ActiveAdmin.register Shipment do
       if params[:shipment][:origin_state] && !params[:shipment][:origin_state].blank?
         shipment.origin += ", "
       end  
-       shipment.origin += params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code] 
+       shipment.origin += params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code] + " " + params[:shipment][:origin_country]
       
       #Concat destination data     
       if params[:shipment][:dest_address1] && !params[:shipment][:dest_address1].blank?
@@ -181,19 +187,25 @@ ActiveAdmin.register Shipment do
          shipment.destination += ", "
       end
 
-      shipment.destination += params[:shipment][:dest_state]   + " " + params[:shipment][:dest_zip_postal_code] 
+      shipment.destination += params[:shipment][:dest_state]   + " " + params[:shipment][:dest_zip_postal_code] + " "  + params[:shipment][:dest_country]
 
       shipment.origin_address1 =  params[:shipment][:origin_address1]
       shipment.origin_address2 =  params[:shipment][:origin_address2]
       shipment.origin_state = params[:shipment][:origin_state]
       shipment.origin_city = params[:shipment][:origin_city]
       shipment.origin_zip_postal_code = params[:shipment][:origin_zip_postal_code]
+      shipment.origin_country = params[:shipment][:origin_country]
 
       shipment.dest_address1 = params[:shipment][:dest_address1]
       shipment.dest_address2 = params[:shipment][:dest_address2]
       shipment.dest_state = params[:shipment][:dest_state]
       shipment.dest_city = params[:shipment][:dest_city]
       shipment.dest_zip_postal_code = params[:shipment][:dest_zip_postal_code]
+      shipment.dest_country = params[:shipment][:dest_country]
+
+      shipment.pieces_total = params[:shipment][:piece_count]
+      shipment.special_instructions = params[:shipment][:special_instructions]
+      shipment.dangerous_goods = params[:shipment][:dangerous_goods]
 
       shipment.shipment_id = params[:shipment][:shipment_id]
       shipment.service_level = params[:shipment][:service_level]

@@ -1,0 +1,6 @@
+config:
+  ftp:
+     descartes:
+        host: ftp.myvan.descartes.com
+        username: mhenley
+        password: LdMF9m+f

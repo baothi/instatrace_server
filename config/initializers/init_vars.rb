@@ -1,2 +1,5 @@
+COMMON = YAML::load(File.open(File.join(Rails.root, "config", "common.yml")))
 TRANSPAK_STATUS = YAML::load(File.open(File.join(Rails.root, "config", "transpak.yml")))
 FORWARDAIR_STATUS = YAML::load(File.open(File.join(Rails.root, "config", "forwardair.yml")))
+DESCARTES_CARRIER = YAML::load(File.open(File.join(Rails.root, "config", "descartes.yml")))
+COUNTRY_CODE = YAML::load(File.open(File.join(Rails.root, "config", "countrycode.yml")))

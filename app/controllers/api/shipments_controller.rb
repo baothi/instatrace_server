@@ -28,34 +28,70 @@ class Api::ShipmentsController < Api::ApiController
         @shipment.origin =  params[:shipment][:origin_address1] 
         if params[:shipment][:origin_address2] 
            @shipment.origin += "<br/>" + params[:shipment][:origin_address2] + "<br/>"
-        end       
-        @shipment.origin += params[:shipment][:origin_city] + ", " + params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code] 
+        end   
+        origin_country_name = COUNTRY_CODE['countrycode'][params[:shipment][:origin_country]] 
+        @shipment.origin += params[:shipment][:origin_city] + ", " + params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code]  + "<br/>" + origin_country_name
+        
+        @shipment.origin_address1 = params[:shipment][:origin_address1]
+        @shipment.origin_address2 = params[:shipment][:origin_address2]
+        @shipment.origin_city = params[:shipment][:origin_city]
+        @shipment.origin_state = params[:shipment][:origin_state]
+        @shipment.origin_zip_postal_code = params[:shipment][:origin_zip_postal_code]
+        @shipment.origin_country = params[:shipment][:origin_country]
+
 
         @shipment.destination = params[:shipment][:dest_address1] 
         if params[:shipment][:dest_address2]
            @shipment.destination += "<br/>" + params[:shipment][:dest_address2] + "<br/>" 
         end 
-        @shipment.destination += params[:shipment][:dest_city] +  ", " +  params[:shipment][:dest_state]  +  " "  +    params[:shipment][:dest_zip_postal_code] 
+        dest_country_name = COUNTRY_CODE['countrycode'][params[:shipment][:dest_country]] 
+        
+        @shipment.destination += params[:shipment][:dest_city] +  ", " +  params[:shipment][:dest_state]  +  " "  +    params[:shipment][:dest_zip_postal_code]  + "<br/>"  + dest_country_name
+        @shipment.dest_address1 = params[:shipment][:dest_address1]
+        @shipment.dest_address2 = params[:shipment][:dest_address2]
+        @shipment.dest_city = params[:shipment][:dest_city]
+        @shipment.dest_state = params[:shipment][:dest_state]
+        @shipment.dest_zip_postal_code = params[:shipment][:dest_zip_postal_code]
+        @shipment.dest_country = params[:shipment][:dest_country]
+        # Get value of piece_count as total of pieces
+        @shipment.pieces_total = params[:shipment][:piece_count]
+        @shipment.special_instructions = params[:shipment][:special_instructions]
+        @shipment.dangerous_goods = params[:shipment][:dangerous_goods]
 
         #@shipment.ship_date = Date.strptime(params[:shipment][:ship_date], '%Y-%m-%d %H:%M:%S') rescue nil
         #@shipment.delivery_date = Date.strptime(params[:shipment][:delivery_date], '%Y-%m-%d %H:%M:%S') rescue nil   
 
         @shipment.ship_date = params[:shipment][:ship_date]
         @shipment.delivery_date = params[:shipment][:delivery_date]     
+        valid = true
+        message = ''
+        if params[:shipment][:dangerous_goods] != '0' && params[:shipment][:dangerous_goods] != '1'
+            message = 'The dangerous_goods field requires value 0 or 1'
+            valid = false
+        end
+        if (params[:shipment][:origin_country] !=0 && params[:shipment][:origin_country].length != 2 ) || (params[:shipment][:dest_country] !=0 && params[:shipment][:dest_country].length != 2 )
+            message = 'The length of country code requires two characters'
+            valid = false
+        end
 
-        if @shipment.save! 
+        if valid && @shipment.save! 
            piece = Piece.find_by_sql ["SELECT SUM(weight) as weight, SUM(height) as height, SUM(length) as length, count(id) as pieces_total FROM pieces WHERE shipment_id = ? ",@shipment.id]
            if piece     
               piece = piece.first         
               #Update data of shipment table             
-              @shipment.update_attributes(:weight => piece.weight, :height => piece.height, :length => piece.length, :pieces_total => piece.pieces_total )              
+              #@shipment.update_attributes(:weight => piece.weight, :height => piece.height, :length => piece.length, :pieces_total => piece.pieces_total )              
+              @shipment.update_attributes(:weight => piece.weight, :height => piece.height, :length => piece.length)              
               @shipment.save!            
-           end                           
+           end                  
+           message = 'Shipment was successfully updated.'        
+           render :json => {:status => 200, :message => message}
 
+        else
+            render :json => {:status => 400, :message => message}  
         end
-        render :json => {:status => 200, :message => t('messages.notice.milestone_created_ok')}
+
     else        
-      raise Exception, t('errors.messages.not_found') 
+      raise Exception, t('errors.messages.not_found')       
     end
   end
 
@@ -107,7 +143,9 @@ class Api::ShipmentsController < Api::ApiController
           setting = Setting.find_by_name('EnableWTUpdateStatus')
           if setting && setting.value == '1'
              #hawb = 340510 #For testing
-             hawb = shipment.hawb             
+             hawb = shipment.hawb  
+             piece_count = shipment.piece_count 
+
              #Call update status service from WordTrak             
              begin
                 client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
@@ -120,9 +158,35 @@ class Api::ShipmentsController < Api::ApiController
                       Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
                    end
                  end
+                # if milestone && milestone.action.to_s == 'delivered'
+                #     login_name = nil
+                #     signature_name = nil
+                #     delivered_date = nil
+                    
+                #     if milestone && milestone.signature
+                #        login_name = milestone.driver.login
+                #        signature_name = milestone.signature.name
+                #        zone = RestClient.get("http://api.geonames.org/timezone?lat=#{milestone.latitude}&lng=#{milestone.longitude}&username=instatrace")
+                #        timezone = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
+                #        delivered_date = milestone.created_at.in_time_zone(timezone).to_s('YYYY-MM-DD HH:MM:SS')
+                #     end                
+                    
+                #     #Call SubmitPOD service from WordTrak  
+                #     response = client.request :submit_pod, body: {"UserInitials" => "UserInitials", "HAWB" => hawb, "UserName" => login_name, "PiecesDelivered" => piece_count.to_i, "Signer" => signature_name, "PODDateTime" => "2012-12-20 15:16:24"} 
+                #     if response.success?
+                #        data = response.to_array(:update_status_response, :update_status_result).first      
+                #        if data == true
+                #           Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                #        else
+                #           Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                #        end
+                #     end
+                # end
+                
+
              rescue Savon::Error => error
                   Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb} #{error}"
-             end             
+             end                      
           end
 
         end
