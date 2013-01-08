@@ -178,7 +178,7 @@ class Api::ShipmentsController < Api::ApiController
             document.save
           end
           
-         if shipment_data['signature']
+          if shipment_data['signature']
             sign = milestone.create_signature(:name      => shipment_data['signature']['name'],
                                               :email     => shipment_data['signature']['email'],
                                               :signature => create_image(shipment_data['signature']['signature'],'signature'))
@@ -188,8 +188,8 @@ class Api::ShipmentsController < Api::ApiController
               milestone.damages.create(:photo => create_image(image,"damage"))
             end
           end
-
-           #Check setting
+          
+          #Check setting
           setting = Setting.find_by_name('EnableWTUpdateStatus')
           
           if setting && setting.value == '1'
@@ -208,6 +208,44 @@ class Api::ShipmentsController < Api::ApiController
                       Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
                    end
                 end
+                
+                # Create file and send file to FTP server
+                fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
+                
+                if File.exists?(fsr_file)
+                    File.delete
+                    puts "**********************Delete old file if existing****************"        
+                end
+                
+                @shipment = Shipment.find_by_hawb(hawb)
+                receiver_id = @shipment.mawb[0..2]
+                real_mawb = @shipment.mawb[3..-1]
+                
+                iata = DESCARTES_CARRIER['carrier'][receiver_id]
+                File.open(fsr_file,"w+") do |f|
+                    f.write("QK #{iata}\n")
+                    f.write(".SFOTRPA 141131\n")
+                    f.write("FSR\n")
+                    f.write("#{receiver_id}-#{real_mawb}\n")
+                end
+                
+                descartes_config = COMMON['config']['ftp']['descartes']
+                current = Date.today.to_time
+                timestamp = Time.new.to_time.to_i.to_s
+                
+                ftp = Net::FTP::new(descartes_config["host"])
+                
+                if ftp.login(descartes_config["username"], descartes_config["password"])
+                    ftp.passive = true
+                    ftp.puttextfile(fsr_file,"FSR.txt")
+                    ftp.chdir(iata).nil?
+                    ftp.gettextfile("cargoimp.FSA","/home/descartesftp/cargoimp#{timestamp}.FSA")
+                    ftp.close
+                    puts "***************************PUT FILE TO FTP**************"
+                else
+                    puts "***************************FTP CAN NOT LOGIN**************"
+                end
+                # End create file and send file to FTP server
                 
                 if milestone && milestone.action.to_s == 'delivered'
                     login_name = nil
@@ -228,43 +266,6 @@ class Api::ShipmentsController < Api::ApiController
                        data = response.to_array(:update_status_response, :update_status_result).first      
                        
                        if data == true
-                          # Create file and send file to FTP server
-                          fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
-                          
-                          if File.exists?(fsr_file)
-                             File.delete
-                             puts "**********************Delete old file if existing****************"        
-                          end
-                          
-                          @shipment = Shipment.find_by_hawb(hawb)
-                          receiver_id = @shipment.mawb[0..2]
-                          real_mawb = @shipment.mawb[3..-1]
-                          
-                          iata = DESCARTES_CARRIER['carrier'][receiver_id]
-                          File.open(fsr_file,"w+") do |f|
-                            f.write("QK #{iata}\n")
-                            f.write(".SFOTRPA 141131\n")
-                            f.write("FSR\n")
-                            f.write("#{receiver_id}-#{real_mawb}\n")
-                          end
-                          
-                          descartes_config = COMMON['config']['ftp']['descartes']
-                          current = Date.today.to_time
-                          timestamp = Time.new.to_time.to_i.to_s
-                          
-                          ftp = Net::FTP::new(descartes_config["host"])
-                          
-                          if ftp.login(descartes_config["username"], descartes_config["password"])
-                              ftp.passive = true
-                              ftp.puttextfile(fsr_file,"FSR.txt")
-                              ftp.chdir(iata).nil?
-                              ftp.gettextfile("cargoimp.FSA","/home/descartesftp/cargoimp#{timestamp}.FSA")
-                              ftp.close
-                              puts "***************************PUT FILE TO FTP**************"
-                          else
-                              puts "***************************FTP CAN NOT LOGIN**************"
-                          end
-                          # End create file and send file to FTP server
                           Rails.logger.info "*****************SUCCESS SubmitPOD Wordtrak!  for Shipemt with HAWB: #{hawb}"
                        else
                           Rails.logger.info "*****************ERROR SubmitPOD Wordtrak!  for Shipemt with HAWB: #{hawb}"
