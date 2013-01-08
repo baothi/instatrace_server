@@ -6,7 +6,7 @@ class Milestone < ActiveRecord::Base
   belongs_to :shipment
   belongs_to :driver, :class_name => 'User'
   
-  enum_attr :action, %w(pick-up back_at_base en_route_to_carrier tendered_to_carrier recovered_from_carrier out_for_delivery delivered completed_unloading/recovered departed_origin_terminal arrived_transfer_terminal departed_transfer_terminal arrived_destination_terminal)
+  enum_attr :action, %w(pick-up back_at_base en_route_to_carrier tendered_to_carrier recovered_from_carrier out_for_delivery delivered completed_unloading/recovered departed_origin_terminal arrived_transfer_terminal departed_transfer_terminal arrived_destination_terminal Shipment_Delayed Alert_Onfirmed All_Import_Documents_Received On_hand_Dest_terminal Arrived_Dest_Terminal Booked_with_carrier Customs_Released/Cleared Tendered_to_Carrier Routing_Confirmed Recovered_Dest_Terminal Delivered_w/Proof_of_Delivery Picked_up_from_Shipper In_Transit Assigned_to_flight In_Customs_Clearance Shipment_on_Hold Confirmed_On_Board_Carrier Missing_EDI_Translation_Code On_hand_-_Dest_terminal Recovered_-_Dest_Terminal)
   
   validates :shipment_id, :driver_id, :action, :presence => {:if => :completed?}  
   validates :latitude, :longitude, :numericality => true, :presence => {:if => :completed?}  
@@ -26,19 +26,20 @@ class Milestone < ActiveRecord::Base
 
   def created_time_with_timezone
     milestone = Milestone.find(self.id)
+    
     #Resque doesn't update timezone in sometime,therefore, need to update timezone of milestone again when the user views milestone list
     if timezone.nil? && milestone.longitude != '0.0' &&  milestone.latitude != '0.0'             
        zone = RestClient.get("http://api.geonames.org/timezone?lat=#{milestone.latitude}&lng=#{milestone.longitude}&username=instatrace")
        timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
        milestone.update_attribute(:timezone, timeshift) 
-       created_at.in_time_zone(timezone) if timeshift
+       "Waiting for synchronization"
 
-    elsif timezone
+    elsif timezone && timezone.to_s !='0.0'
        created_at.in_time_zone(timezone) if created_at   
      else
       #For case Forward Air integration
        created_at 
-    end        
+    end
   end
 
   def create_address_with_location
