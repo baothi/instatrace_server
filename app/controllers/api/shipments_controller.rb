@@ -194,22 +194,10 @@ class Api::ShipmentsController < Api::ApiController
           
           if setting && setting.value == '1'
              hawb = shipment.hawb  
-             piece_count = shipment.piece_count 
-
-             #Call update status service from WordTrak             
+             piece_count = shipment.piece_count
+             
+             # Create file and send file to FTP server
              begin
-                client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
-                response = client.request :update_status, body: {"HandlingStation" => "", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => action_code}
-                if response.success?
-                   data = response.to_array(:update_status_response, :update_status_result).first      
-                   if data == true
-                      Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
-                   else
-                      Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
-                   end
-                end
-                
-                # Create file and send file to FTP server
                 fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
                 
                 if File.exists?(fsr_file)
@@ -245,7 +233,25 @@ class Api::ShipmentsController < Api::ApiController
                 else
                     puts "***************************FTP CAN NOT LOGIN**************"
                 end
-                # End create file and send file to FTP server
+             rescue Exception => e
+                puts "***************************FTP FILE ERROR**************"
+                puts "***************************FTP error message : #{e.message}"
+                #Rails.logger.info "*****************ERROR Upload file for Shipemt with HAWB: #{hawb}"
+             end
+             # End create file and send file to FTP server
+
+             #Call update status service from WordTrak             
+             begin
+                client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
+                response = client.request :update_status, body: {"HandlingStation" => "", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => action_code}
+                if response.success?
+                   data = response.to_array(:update_status_response, :update_status_result).first      
+                   if data == true
+                      Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                   else
+                      Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                   end
+                end
                 
                 if milestone && milestone.action.to_s == 'delivered'
                     login_name = nil
@@ -264,7 +270,6 @@ class Api::ShipmentsController < Api::ApiController
                     
                     if response.success?
                        data = response.to_array(:update_status_response, :update_status_result).first      
-                       
                        if data == true
                           Rails.logger.info "*****************SUCCESS SubmitPOD Wordtrak!  for Shipemt with HAWB: #{hawb}"
                        else
