@@ -198,41 +198,49 @@ class Api::ShipmentsController < Api::ApiController
              
              # Create file and send file to FTP server
              begin
-                fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
-                
-                if File.exists?(fsr_file)
-                    File.delete
-                    puts "**********************Delete old file if existing****************"        
-                end
-                
                 @shipment = Shipment.find_by_hawb(hawb)
                 receiver_id = @shipment.mawb[0..2]
                 real_mawb = @shipment.mawb[3..-1]
                 
                 iata = DESCARTES_CARRIER['carrier'][receiver_id]
-                File.open(fsr_file,"w+") do |f|
-                    f.write("QK #{iata}\n")
-                    f.write(".SFOTRPA 141131\n")
-                    f.write("FSR\n")
-                    f.write("#{receiver_id}-#{real_mawb}\n")
-                end
-                
-                descartes_config = COMMON['config']['ftp']['descartes']
-                current = Date.today.to_time
-                timestamp = Time.new.to_time.to_i.to_s
-                
-                ftp = Net::FTP::new(descartes_config["host"])
-                
-                if ftp.login(descartes_config["username"], descartes_config["password"])
-                    ftp.passive = true
-                    ftp.puttextfile(fsr_file,"FSR.txt")
-                    ftp.chdir(iata).nil?
-                    ftp.gettextfile("cargoimp.FSA","/home/descartesftp/cargoimp#{timestamp}.FSA")
-                    ftp.close
-                    puts "***************************PUT FILE TO FTP**************"
+                # MAWB code must be 11 characters 
+                # 3 characters is air carrier code which is mapped with IATA code in file descartes.yml
+                # 8 next characters for real MAWB
+                if @shipment.mawb.length != 11 || iata.nil? 
+                    puts "**********************Invalid MAWB****************"
                 else
-                    puts "***************************FTP CAN NOT LOGIN**************"
+                    fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
+                    
+                    if File.exists?(fsr_file)
+                        File.delete
+                        puts "**********************Delete old file if existing****************"        
+                    end
+                    
+                    File.open(fsr_file,"w+") do |f|
+                        f.write("QK #{iata}\n")
+                        f.write(".SFOTRPA 141131\n")
+                        f.write("FSR\n")
+                        f.write("#{receiver_id}-#{real_mawb}\n")
+                    end
+                    
+                    descartes_config = COMMON['config']['ftp']['descartes']
+                    current = Date.today.to_time
+                    timestamp = Time.new.to_time.to_i.to_s
+                    
+                    ftp = Net::FTP::new(descartes_config["host"])
+                    
+                    if ftp.login(descartes_config["username"], descartes_config["password"])
+                        ftp.passive = true
+                        ftp.puttextfile(fsr_file,"FSR.txt")
+                        ftp.chdir(iata).nil?
+                        ftp.gettextfile("cargoimp.FSA","/home/descartesftp/cargoimp#{timestamp}.FSA")
+                        ftp.close
+                        puts "***************************PUT FILE TO FTP**************"
+                    else
+                        puts "***************************FTP CAN NOT LOGIN**************"
+                    end
                 end
+                #End check valid MAWB code
              rescue Exception => e
                 puts "***************************FTP FILE ERROR**************"
                 puts "***************************FTP error message : #{e.message}"
