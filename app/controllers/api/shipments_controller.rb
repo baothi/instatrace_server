@@ -196,57 +196,53 @@ class Api::ShipmentsController < Api::ApiController
              hawb = shipment.hawb  
              piece_count = shipment.piece_count
              
-             # Create file and send file to FTP server
-             begin
-                @shipment = Shipment.find_by_hawb(hawb)
-                receiver_id = @shipment.mawb[0..2]
-                real_mawb = @shipment.mawb[3..-1]
+             
+             @shipment = Shipment.find_by_hawb(hawb)
+             receiver_id = @shipment.mawb[0..2]
+             real_mawb = @shipment.mawb[3..-1]
+             
+             iata = DESCARTES_CARRIER['carrier'][receiver_id]
+             # MAWB code must be 11 characters 
+             # 3 characters is air carrier code which is mapped with IATA code in file descartes.yml
+             # 8 next characters for real MAWB
+             if @shipment.mawb.length != 11 || iata.nil? 
+                puts "**********************Invalid MAWB****************"
+             else
+                fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
                 
-                iata = DESCARTES_CARRIER['carrier'][receiver_id]
-                # MAWB code must be 11 characters 
-                # 3 characters is air carrier code which is mapped with IATA code in file descartes.yml
-                # 8 next characters for real MAWB
-                if @shipment.mawb.length != 11 || iata.nil? 
-                    puts "**********************Invalid MAWB****************"
-                else
-                    fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
-                    
-                    if File.exists?(fsr_file)
-                        File.delete
-                        puts "**********************Delete old file if existing****************"        
-                    end
-                    
-                    File.open(fsr_file,"w+") do |f|
-                        f.write("QK #{iata}\n")
-                        f.write(".SFOTRPA 141131\n")
-                        f.write("FSR\n")
-                        f.write("#{receiver_id}-#{real_mawb}\n")
-                    end
-                    
-                    descartes_config = COMMON['config']['ftp']['descartes']
-                    current = Date.today.to_time
-                    timestamp = Time.new.to_time.to_i.to_s
-                    
-                    ftp = Net::FTP::new(descartes_config["host"])
-                    
-                    if ftp.login(descartes_config["username"], descartes_config["password"])
+                if File.exists?(fsr_file)
+                    File.delete
+                    puts "**********************Delete old file if existing****************"        
+                end
+                
+                File.open(fsr_file,"w+") do |f|
+                    f.write("QK #{iata}\n")
+                    f.write(".SFOTRPA 141131\n")
+                    f.write("FSR\n")
+                    f.write("#{receiver_id}-#{real_mawb}\n")
+                end
+                
+                descartes_config = COMMON['config']['ftp']['descartes']
+                current = Date.today.to_time
+                timestamp = Time.new.to_time.to_i.to_s
+                
+                # Create file and send file to FTP server
+                ftp = Net::FTP::new(descartes_config["host"])
+                
+                if ftp.login(descartes_config["username"], descartes_config["password"])
+                    begin
                         ftp.passive = true
                         ftp.puttextfile(fsr_file,"FSR.txt")
-                        ftp.chdir(iata).nil?
-                        ftp.gettextfile("cargoimp.FSA","/home/descartesftp/cargoimp#{timestamp}.FSA")
-                        ftp.close
-                        puts "***************************PUT FILE TO FTP**************"
-                    else
-                        puts "***************************FTP CAN NOT LOGIN**************"
+                        #ftp.chdir(iata).nil?
+                        #ftp.gettextfile("cargoimp.FSA","/home/descartesftp/cargoimp#{timestamp}.FSA")
+                    rescue Exception => e
+                        puts "***************************WAITING TO GET RESPONSE BY CRONTAB**************"
                     end
                 end
-                #End check valid MAWB code
-             rescue Exception => e
-                puts "***************************FTP FILE ERROR**************"
-                puts "***************************FTP error message : #{e.message}"
-                #Rails.logger.info "*****************ERROR Upload file for Shipemt with HAWB: #{hawb}"
+                # End create file and send file to FTP server
+                ftp.close
              end
-             # End create file and send file to FTP server
+             #End check valid MAWB code
 
              #Call update status service from WordTrak             
              begin
