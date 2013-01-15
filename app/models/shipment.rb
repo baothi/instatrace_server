@@ -90,8 +90,8 @@ class Shipment < ActiveRecord::Base
     if options && options.has_key?(:addShip)
       hash = serializable_hash(options)
       hash[:hawb_with_scac] = self.hawb_with_scac
-      hash[:ship_date] = self.ship.to_s
-      hash[:delivery_date] = self.delivery.to_s
+      hash[:ship_date] = self.ship_date.to_s
+      hash[:delivery_date] = self.delivery_date.to_s
       hash[:current_status] = self.current_status
     end
     return hash

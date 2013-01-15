@@ -83,12 +83,14 @@ namespace :import do
         ftp.passive = true
         begin_date = Date.today.beginning_of_day.utc
         end_date = Date.today.end_of_day.utc
-        @milestones = Milestone.where("(created_at >= ? and created_at <= ?) or (updated_at >= ? and updated_at <= ?)",begin_date,end_date,begin_date,end_date)
+        #Get shipments which were created/updated mawb on today ready to get response FSA from Descartes
+        condition = "mawb is not null and mawb <> '' and ((created_at >= ? and created_at <= ?) or (updated_at >= ? and updated_at <= ?))"
+        @shipments_updated_today = Shipment.where(condition,begin_date,end_date,begin_date,end_date)
         
-        # Loop for each milestone was created or updated today 
-        @milestones.each do |item|
+        # Loop for each shipments were updated
+        @shipments_updated_today.each do |item|
              #Get shipment detail
-             @shipment = item.shipment
+             @shipment = item
              receiver_id = @shipment.mawb[0..2]
              real_mawb = @shipment.mawb[3..-1]
              iata = DESCARTES_CARRIER['carrier'][receiver_id]
@@ -99,11 +101,10 @@ namespace :import do
              if @shipment.mawb.length != 11 || iata.nil? 
                puts "**********************HAWB #{@shipment.hawb} : Invalid MAWB **********************"
              else
-                 current = Date.today.to_time
-                 timestamp = Time.new.to_time.to_i.to_s
-                 file_path = "/home/descartesftp/cargoimp#{timestamp}.FSA"
                  #Start begin 1
                  begin
+                    timestamp = Time.new.to_time.to_i.to_s
+                    file_path = "/home/descartesftp/cargoimp#{timestamp}.FSA"
                     # Go to root
                     ftp.chdir('/')
                     ftp.chdir(iata).nil?
@@ -118,7 +119,7 @@ namespace :import do
                             # Compare response request content match with our request or not
                             # If not, delete file FSA
                             if receiver_id_real_mawb == receiver_id + "-" + real_mawb
-                                puts "HAWB #{@shipment.hawb} : done **********************"
+                                puts "HAWB #{@shipment.hawb} done --- File FSA: #{file_path}"
                             else
                                 #Delete the file FSA
                                 FileUtils.rm(file_path)
@@ -128,8 +129,8 @@ namespace :import do
                  rescue Exception => e
                    # Remove response file empty
                    FileUtils.rm(file_path) if File.exists?(file_path)
-                   #puts "**********************HAWB #{@shipment.hawb} : #{e.message}"
                    #Continue loop other milestone
+                   puts "HAWB #{@shipment.hawb} error : #{e.message} --- shipment: mawb = #{@shipment.mawb}, created_at = #{@shipment.created_at}, updated_at = #{@shipment.updated_at}"
                    next
                  end
                  #End begin 1

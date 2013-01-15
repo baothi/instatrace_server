@@ -121,6 +121,56 @@ class Api::ShipmentsController < Api::ApiController
                     @shipment.update_attributes(:weight => piece.weight, :height => piece.height, :length => piece.length)
                     @shipment.save!
                 end
+                
+                #***********************************************************
+                #********* Send FSA request to Descartes FTP server ********
+                #***********************************************************
+                puts "********* Send FSA request to Descartes FTP server : HAWB = #{@shipment.hawb}, MAWB = #{@shipment.mawb} ********"
+                receiver_id = @shipment.mawb[0..2]
+                real_mawb = @shipment.mawb[3..-1]
+                iata = DESCARTES_CARRIER['carrier'][receiver_id]
+                # MAWB code must be 11 characters 
+                # 3 characters is air carrier code which is mapped with IATA code in file descartes.yml
+                # 8 next characters for real MAWB
+                if @shipment.mawb.length != 11 || iata.nil? 
+                   puts "**********************Invalid MAWB****************"
+                else
+                   begin
+                       fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
+                       
+                       if File.exists?(fsr_file)
+                           File.delete
+                           puts "**********************Delete old file if existing****************"        
+                       end
+                       
+                       File.open(fsr_file,"w+") do |f|
+                           f.write("QK #{iata}\n")
+                           f.write(".SFOTRPA 141131\n")
+                           f.write("FSR\n")
+                           f.write("#{receiver_id}-#{real_mawb}\n")
+                       end
+                       
+                       #Get FTP server detail
+                       descartes_config = COMMON['config']['ftp']['descartes']
+                       # Create file and send file to FTP server
+                       ftp = Net::FTP::new(descartes_config["host"])
+                       if ftp.login(descartes_config["username"], descartes_config["password"])
+                           ftp.passive = true
+                           ftp.puttextfile(fsr_file,"FSR.txt")
+                       end
+                       # End create file and send file to FTP server
+                       ftp.close
+                   rescue Exception => e
+                       puts "********************* Send request FSR to Descartes FTP server error **************"
+                       puts "#{e.message}"
+                   end
+                end
+                #End check valid MAWB code
+                puts "******* End send FSA request to Descartes FTP server ******"
+                #***********************************************************
+                #******* End send FSA request to Descartes FTP server ******
+                #***********************************************************
+                
                 message = 'Shipment was successfully updated.'
                 render :json => {:status => 200, :message => message}
             else
@@ -195,54 +245,6 @@ class Api::ShipmentsController < Api::ApiController
           if setting && setting.value == '1'
              hawb = shipment.hawb  
              piece_count = shipment.piece_count
-             
-             
-             @shipment = Shipment.find_by_hawb(hawb)
-             receiver_id = @shipment.mawb[0..2]
-             real_mawb = @shipment.mawb[3..-1]
-             
-             iata = DESCARTES_CARRIER['carrier'][receiver_id]
-             # MAWB code must be 11 characters 
-             # 3 characters is air carrier code which is mapped with IATA code in file descartes.yml
-             # 8 next characters for real MAWB
-             if @shipment.mawb.length != 11 || iata.nil? 
-                puts "**********************Invalid MAWB****************"
-             else
-                fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
-                
-                if File.exists?(fsr_file)
-                    File.delete
-                    puts "**********************Delete old file if existing****************"        
-                end
-                
-                File.open(fsr_file,"w+") do |f|
-                    f.write("QK #{iata}\n")
-                    f.write(".SFOTRPA 141131\n")
-                    f.write("FSR\n")
-                    f.write("#{receiver_id}-#{real_mawb}\n")
-                end
-                
-                descartes_config = COMMON['config']['ftp']['descartes']
-                current = Date.today.to_time
-                timestamp = Time.new.to_time.to_i.to_s
-                
-                # Create file and send file to FTP server
-                ftp = Net::FTP::new(descartes_config["host"])
-                
-                if ftp.login(descartes_config["username"], descartes_config["password"])
-                    begin
-                        ftp.passive = true
-                        ftp.puttextfile(fsr_file,"FSR.txt")
-                        #ftp.chdir(iata).nil?
-                        #ftp.gettextfile("cargoimp.FSA","/home/descartesftp/cargoimp#{timestamp}.FSA")
-                    rescue Exception => e
-                        puts "***************************WAITING TO GET RESPONSE BY CRONTAB**************"
-                    end
-                end
-                # End create file and send file to FTP server
-                ftp.close
-             end
-             #End check valid MAWB code
 
              #Call update status service from WordTrak             
              begin
