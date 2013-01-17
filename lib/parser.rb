@@ -37,7 +37,7 @@ class Parser
       end
       
     end
-
+    
     def isa?
       data =~ /isa\*\d{2}\*/i
     end
@@ -54,13 +54,11 @@ class Parser
       path = options[:path] || default_files_path
       files_path = File.join(path, options[:file_name])      
     end
-
     self.data = EDITransaction.new(options[:data] || IO.read(files_path), options[:parser_type], options[:file_type])
-
     raise 'Data is not defined.' if self.data.nil?
     forwardair_status = nil
     descartes_status = nil
-      
+    
     if options[:parser_type] && options[:parser_type] == 'milestones_forwardair'
       forwardair_status = YAML::load(File.open(File.join(Rails.root, "config", "forwardair.yml")))
       user = User.find_by_login('ForwardAir')
@@ -70,14 +68,13 @@ class Parser
     elsif options[:parser_type] && options[:parser_type] == 'milestones_descartes'
       descartes_status =  YAML::load(File.open(File.join(Rails.root, "config", "descartes.yml")))
       user = User.find_by_login('Descartes')
-      driver_id = user.id if user      
+      
+      driver_id = user.id if user
       self.data.actions.each {|a| create_milestones_descartes(a, driver_id, descartes_status) if a && driver_id}
-
     else
       self.data.actions.each {|a| create_shipment(a) if a}
     end
 
-    
   rescue => e
     @errors << {
       :shipment_id => 'NA',
@@ -92,47 +89,62 @@ class Parser
   end
 
   def create_milestones_descartes(action, driver_id, status_maps)
-    transpak = action.find{|d| d.first.eql? "QP SFOTRPA"}
     
     return if action.empty? 
-       
+    
     mawb = action[0][0].to_s.sub('-', '') if action[0][0].to_s.include? '-'
-      
+    #Real mawb only 11 characters
+    mawb = mawb[0..10]
     shipments = Shipment.where('mawb = ?', mawb)
     return if shipments.nil? || (shipments && shipments.count == 0)
     shipments.each do |shipment|
         shipment_id = shipment.id   
-        #Create new milestone
-        milestone = Milestone.new    
-        milestone.shipment_id = shipment_id
-        milestone.driver_id = driver_id
-        milestone.completed = 1    
-
         months =  { "JAN" => 1, "FEB" => 2 , "FEB" => 2, "MAR" => 3, "APR" => 4, "MAY" => 5, "JUN" => 6, "JUL" => 7, "AUG" => 8, "SEP" => 9, "OCT" => 10, "NOV" => 11, "DEC" => 12}
+        #Get message of each actions
         fsa_messages = action[1..-1]
+        #Store date to update created_at for event action does't have datetime
+        pre_time = nil
         fsa_messages.each do |m|
             wordtrak_status = status_maps['descartes_wt'][m[0]]
+            #Create new milestone
+            milestone = Milestone.new
+            milestone.shipment_id = shipment_id
+            milestone.driver_id = driver_id
+            milestone.completed = 1
             milestone.action = status_maps['wt_status']["#{wordtrak_status}"]
-            milestone.action_code = wordtrak_status              
-            hour = "00"
-            minute = "00"
-            second = "00"
-               
-            if m[2].length > 5 #Date format DDMMHHMM
-               hour = m[2][5..6]
-               minute = m[2][7..8]      
-            end
-            # Ready parse time data to UTC timezone (is current timezone config)
-            Time.zone = "UTC"
-            date = m[2][0..1]
-            month = months["#{m[2][2..4]}"]
-            year = Time.now.year
+            milestone.action_code = wordtrak_status
             
-            if  month.to_i < 10
-                month ="0#{month}"
+            begin
+                hour = "00"
+                minute = "00"
+                second = "00"
+                #Get datetime section from array
+                date_section = m[2]
+                # if status event action is DLV, datetime is in section array 2th
+                date_section = m[1] if m[0] == 'DLV'
+                
+                if date_section.length > 5 #Date format DDMMHHMM
+                   hour = date_section[5..6]
+                   minute = date_section[7..8]      
+                end
+                # Ready parse time data to UTC timezone (is current timezone config)
+                Time.zone = "UTC"
+                date = date_section[0..1]
+                month = months["#{date_section[2..4]}"]
+                year = Time.now.year
+                
+                if  month.to_i < 10
+                    month ="0#{month}"
+                end
+                
+                # Parse time data and set to created_at of milestone
+                pre_time = "#{year}-#{month}-#{date} #{hour}:#{minute}:#{second}"
+                milestone.created_at = Time.zone.parse(pre_time)
+            rescue Exception => e
+                Time.zone = "UTC"
+                milestone.created_at = Time.zone.parse(pre_time) if ! pre_time.nil? && m[0] == 'OSI'
             end
-            # Parse time data and set to created_at of milestone
-            milestone.created_at = Time.zone.parse("#{year}-#{month}-#{date} #{hour}:#{minute}:#{second}")
+            
             unless milestone.save!
               @errors << {
                 :shipment_id => milestone.shipment_id,
