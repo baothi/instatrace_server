@@ -81,12 +81,78 @@ class Shipment < ActiveRecord::Base
     hash = { :shipment_id => shipment_id,
       :pieces => pieces_total,
       :weight => weight,
-      :pick_up => [origin, shipper].delete_if{ |field| field.nil? || field.blank?}.join(" - "),
-      :destination => [destination, consignee].delete_if{ |field| field.nil? || field.blank?}.join(" - "),
+      :pick_up => [shipper,origin].delete_if{ |field| field.nil? || field.blank?}.join(" - "),
+      :destination => [consignee, destination].delete_if{ |field| field.nil? || field.blank?}.join(" - "),
       :damaged => damaged?,
       :hawb => hawb,
       :mawb => hawb
     }
+    
+    #Parse pickup address
+    origin_country_name = ''
+    if COUNTRY_CODE['countrycode'].include?(self.origin_country)
+        origin_country_name = COUNTRY_CODE['countrycode'][self.origin_country]
+    end
+    
+    pick_up_string = '<div style="padding:0.3em 0;">' + self.shipper + '</div>'
+    unless self.origin_address1.blank? && self.origin_address2.blank?
+        pick_up_string += '<div style="padding:0.3em 0">'
+        unless self.origin_address1.blank?
+            pick_up_string += '<div>' + self.origin_address1 + '</div>'
+        end
+        
+        unless self.origin_address2.blank?
+            pick_up_string += '<div>' + self.origin_address2 + '</div>'
+        end
+        pick_up_string += '</div>'
+    end
+    
+    unless self.origin_city.blank? &&  self.origin_state.blank? && self.origin_zip_postal_code.blank?
+        pick_up_string += '<div style="padding:0.3em 0">' + self.origin_city
+        unless self.origin_state.blank? && self.origin_zip_postal_code.blank?
+            pick_up_string += ', '
+        end
+        pick_up_string += self.origin_state  +  ' '  +    self.origin_zip_postal_code + '</div>'
+    end
+    
+    unless origin_country_name.blank?
+        pick_up_string += '<div>' + origin_country_name + '</div>'
+    end
+    
+    #Parse destination address
+    dest_country_name = ''
+    if COUNTRY_CODE['countrycode'].include?(self.dest_country)
+        dest_country_name = COUNTRY_CODE['countrycode'][self.dest_country]
+    end
+    
+    destination_string = '<div style="padding:0.3em 0;">' + self.consignee + '</div>'
+    unless self.dest_address1.blank? && self.dest_address2.blank?
+        destination_string += '<div style="padding:0.3em 0">'
+        unless self.dest_address1.blank?
+            destination_string += '<div>' + self.dest_address1 + '</div>'
+        end
+        
+        unless self.dest_address2.blank?
+            destination_string += '<div>' + self.dest_address2 + '</div>'
+        end
+        destination_string += '</div>'
+    end
+    
+    unless self.dest_city.blank? &&  self.dest_state.blank? && self.dest_zip_postal_code.blank?
+        destination_string += '<div style="padding:0.3em 0">' + self.dest_city
+        unless self.dest_state.blank? && self.dest_zip_postal_code.blank?
+            destination_string += ', '
+        end
+        destination_string +=  self.dest_state  +  ' '  +    self.dest_zip_postal_code + '</div>'
+    end
+    
+    unless dest_country_name.blank?
+        destination_string += '<div>' + dest_country_name + '</div>'
+    end
+    
+    hash[:pick_up] = pick_up_string
+    hash[:destination] = destination_string
+    
     if options && options.has_key?(:addShip)
       hash = serializable_hash(options)
       hash[:hawb_with_scac] = self.hawb_with_scac
