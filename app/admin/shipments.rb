@@ -36,10 +36,13 @@ ActiveAdmin.register Shipment do
       row :consignee     
       row :ship_date
       row :delivery_date
-      row :special_instructions
+      #row :special_instructions
       row :dangerous_goods
     end
-    active_admin_comments
+    #active_admin_comments
+    panel("Special instruction")do
+        render :partial => "special_instructions"
+    end
   end
   
   # form for new/edit actions
@@ -69,7 +72,9 @@ ActiveAdmin.register Shipment do
       f.input :consignee
       f.input :ship_date
       f.input :delivery_date
+      #f.input :special_instructions, :input_html => {:rows => 10, :cols => 20}
     end
+    
     f.buttons
   end
 

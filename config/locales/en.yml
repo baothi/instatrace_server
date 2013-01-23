@@ -113,6 +113,7 @@ en:
   text_notify_if_damaged: Notify me when any shipment is damaged
   text_notify_if_delayed: Notify me when any shipment is delayed
   text_delay_notifications: Delay Notifications
+  text_special_instructions: Special Intructions
   
   title_check_to_remove_all: Check to remove all
   title_check_to_remove: Check to remove

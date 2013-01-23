@@ -33,7 +33,25 @@
           <td valign="top"><%= number_with_delimiter(@shipment.pieces_total.to_i) %></td>
           <td valign="top"><%= @shipment.delivery.to_date rescue nil %></td>
         </tr>
+        
       </table>
+      <% if ! @shipment.special_instructions.blank? %>
+      <div class="special-instructions"></div>
+      <table class="table_detail2" width="100%">
+        <tr>
+          <th>
+              <%= t(:text_special_instructions) %>
+              <div class="special-instructions-text">
+                  <%= @shipment.special_instructions %>
+              </div>
+              
+          </th>
+        </tr>
+        
+      </table>
+      </div>
+      <% end %>
+      
     </td>
   </tr>
   <tr>

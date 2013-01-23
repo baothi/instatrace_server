@@ -85,7 +85,8 @@ class Shipment < ActiveRecord::Base
       :destination => [consignee, destination].delete_if{ |field| field.nil? || field.blank?}.join(" - "),
       :damaged => damaged?,
       :hawb => hawb,
-      :mawb => hawb
+      :mawb => hawb,
+      :special_instructions => [special_instructions].delete_if{ |field| field.nil? || field.blank?}
     }
     
     #Parse pickup address

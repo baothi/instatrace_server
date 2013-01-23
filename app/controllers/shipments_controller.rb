@@ -71,5 +71,15 @@ class ShipmentsController < ApplicationController
     end
   	redirect_to shipments_path
   end
-
+  
+  def update
+      @shipment = Shipment.find(params[:id])
+      #Don't make effect to task get_response_file , we need disable timestamp for updated_at of Shipment
+      Shipment.record_timestamps=false
+      #Update value
+      @shipment.update_attributes(params[:shipment])
+      #Enable timestamp for updated_at of Shipment
+      Shipment.record_timestamps=true
+      redirect_to admin_shipment_path(@shipment.id)
+  end
 end

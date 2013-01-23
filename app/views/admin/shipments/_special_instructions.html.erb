@@ -1,0 +1,19 @@
+<% @shipment = Shipment.find(params[:id])%>
+<div style="padding: 0 0 0 145px">
+    <%= form_for @shipment do |f| %>
+        <fieldset>
+            <ol>
+                <li>
+                    <%= f.text_area :special_instructions, :cols => 80, :rows => 10, :style => 'width: 520px'  %>
+                </li>
+                <li>
+                    <% if @shipment.special_instructions.blank? %>
+                    <%= f.submit 'Add'%>
+                    <% else %>
+                    <%= f.submit 'Edit'%>
+                    <% end %>
+                </li>
+            </ol>
+        </fieldset>
+    <% end %>
+</div>

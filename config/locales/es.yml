@@ -104,6 +104,7 @@ es:
   text_notify_if_damaged: Notificarme Cuando Cualquier Envio sea Danado
   text_notify_if_delayed: Notificarme Cuando Cualquier Envio este Retrasado
   text_delay_notifications: Notificaciones de retraso
+  text_special_instructions: Instrucciones Especiales
   
   title_check_to_remove_all: Seleccionar para remover todo
   title_check_to_remove: Seleccionar para remover
