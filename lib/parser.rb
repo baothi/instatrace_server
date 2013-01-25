@@ -106,6 +106,12 @@ class Parser
         pre_time = nil
         fsa_messages.each do |m|
             wordtrak_status = status_maps['descartes_wt'][m[0]]
+            #Check this status action exist in milestone or not
+            #Skip for OSI status code
+            if m[0] == 'OSI'
+                puts "Skip action : #{log_fsa_text}"
+                next
+            end
             #Create new milestone
             milestone = Milestone.new
             milestone.shipment_id = shipment_id
@@ -120,8 +126,8 @@ class Parser
                 second = "00"
                 #Get datetime section from array
                 date_section = m[2]
-                # if status event action is DLV, datetime is in section array 2th
-                date_section = m[1] if m[0] == 'DLV'
+                # Check if status event in list array that datetime is in section array 2th
+                date_section = m[1] if ['DLV','NFD','AWD', 'CCD'].include?(m[0])
                 
                 if date_section.length > 5 #Date format DDMMHHMM
                    hour = date_section[5..6]
@@ -140,18 +146,50 @@ class Parser
                 # Parse time data and set to created_at of milestone
                 pre_time = "#{year}-#{month}-#{date} #{hour}:#{minute}:#{second}"
                 milestone.created_at = Time.zone.parse(pre_time)
+                
+                #Check milestone exist or not
+                milestone_exist = Milestone.where(:shipment_id => milestone.shipment_id, :driver_id => milestone.driver_id, :completed => 1, :action => milestone.action,:action_code => milestone.action_code, :created_at => milestone.created_at)
+                if milestone_exist.blank?
+                    #Check milestone save success or not
+                    if milestone.save
+                        #Update WordTrak
+                        #Check setting
+                        setting = Setting.find_by_name('EnableWTUpdateStatus')
+                        
+                        if setting && setting.value == '1'
+                            action_code = milestone.action
+                            
+                            hawb = shipment.hawb  
+                            piece_count = shipment.piece_count
+                            #Call update status service from WordTrak             
+                            client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
+                            response = client.request :update_status, body: {"HandlingStation" => "", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => action_code}
+                            if response.success?
+                               data = response.to_array(:update_status_response, :update_status_result).first
+                               if data == true
+                                  puts "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                                  Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                               else
+                                  puts "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                                  Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                               end
+                            end
+                        end
+                        #End update WordTrak
+                    else
+                      @errors << {
+                        :shipment_id => milestone.shipment_id,
+                        :message => milestone.errors.full_messages.join("; "),
+                        :full_message => "Milestone with shipment ID: (#{milestone.shipment_id}) was not saved due to next errors: #{milestone.errors.full_messages.join("; ")}"
+                      }
+                      puts self.errors.last[:full_message]
+                    end
+                    #End check milestone save success or not
+                end
+                #End check milestone exist or not
             rescue Exception => e
-                Time.zone = "UTC"
-                milestone.created_at = Time.zone.parse(pre_time) if ! pre_time.nil? && m[0] == 'OSI'
-            end
-            
-            unless milestone.save!
-              @errors << {
-                :shipment_id => milestone.shipment_id,
-                :message => milestone.errors.full_messages.join("; "),
-                :full_message => "Milestone with shipment ID: (#{milestone.shipment_id}) was not saved due to next errors: #{milestone.errors.full_messages.join("; ")}"
-              }
-              puts self.errors.last[:full_message]
+                puts "************************* Descartes paser error: #{e.message}"
+                next
             end
         end
            

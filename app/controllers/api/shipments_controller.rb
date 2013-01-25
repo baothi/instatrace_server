@@ -142,10 +142,14 @@ class Api::ShipmentsController < Api::ApiController
                            File.delete
                            puts "**********************Delete old file if existing****************"        
                        end
+                       fsr_timestamp = Time.now
+                       day = fsr_timestamp.day
+                       hour = fsr_timestamp.hour
+                       min = fsr_timestamp.min
                        
                        File.open(fsr_file,"w+") do |f|
                            f.write("QK #{iata}\n")
-                           f.write(".SFOTRPA 141131\n")
+                           f.write(".SFOTRPA #{day}#{hour}#{min}\n")
                            f.write("FSR\n")
                            f.write("#{receiver_id}-#{real_mawb}\n")
                        end

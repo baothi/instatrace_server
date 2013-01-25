@@ -26,19 +26,22 @@ class Milestone < ActiveRecord::Base
 
   def created_time_with_timezone
     milestone = Milestone.find(self.id)
-    
-    #Resque doesn't update timezone in sometime,therefore, need to update timezone of milestone again when the user views milestone list
-    if timezone.nil? && milestone.longitude != '0.0' &&  milestone.latitude != '0.0'             
-       zone = RestClient.get("http://api.geonames.org/timezone?lat=#{milestone.latitude}&lng=#{milestone.longitude}&username=instatrace")
-       timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
-       milestone.update_attribute(:timezone, timeshift) 
-       "Waiting for synchronization"
-
-    elsif timezone && timezone.to_s !='0.0'
-       created_at.in_time_zone(timezone) if created_at   
-     else
-      #For case Forward Air integration
-       created_at 
+    if milestone.driver_id.to_s == "214" #Descartes
+        #For case Descartes integration, use UTC time zone
+        created_at
+    else
+        #Resque doesn't update timezone in sometime,therefore, need to update timezone of milestone again when the user views milestone list
+        if timezone.nil? && milestone.longitude != '0.0' &&  milestone.latitude != '0.0'             
+           zone = RestClient.get("http://api.geonames.org/timezone?lat=#{milestone.latitude}&lng=#{milestone.longitude}&username=instatrace")
+           timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
+           milestone.update_attribute(:timezone, timeshift) 
+           "Waiting for synchronization"
+        elsif timezone && timezone.to_s !='0.0'
+           created_at.in_time_zone(timezone) if created_at   
+        else
+           #For case Forward Air integration
+           created_at 
+        end
     end
   end
 
