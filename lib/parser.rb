@@ -123,10 +123,13 @@ class Parser
                 hour = "00"
                 minute = "00"
                 second = "00"
-                #Get datetime section from array
-                date_section = m[2]
-                # Check if status event in list array that datetime is in section array 2th
-                date_section = m[1] if ['DLV','NFD','AWD', 'CCD'].include?(m[0])
+                # Get datetime section from array
+                date_section = m[1]
+                
+                # Check valid timestamp
+                if ! months.has_key?(date_section[2..4])
+                    date_section = m[2]
+                end
                 
                 if date_section.length > 5 #Date format DDMMHHMM
                    hour = date_section[5..6]
