@@ -121,8 +121,14 @@ namespace :import do
                             if receiver_id_real_mawb == receiver_id + "-" + real_mawb
                                 puts "HAWB #{@shipment.hawb} done --- File FSA: #{file_path}"
                             else
-                                #Delete the file FSA
-                                FileUtils.rm(file_path)
+                                #Check valid for mawb, if this mawb is not exist in shipments table, need to delete this FSA file
+                                mawb_valid_in_db = receiver_id_real_mawb.gsub("-","")
+                                check_mawb_in_db = Shipment.where("mawb = ?",mawb_valid_in_db)
+                                
+                                if check_mawb_in_db.blank?
+                                    #Delete the file FSA
+                                    FileUtils.rm(file_path)
+                                end
                             end
                         end
                     end
