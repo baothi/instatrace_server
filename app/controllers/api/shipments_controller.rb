@@ -216,17 +216,6 @@ class Api::ShipmentsController < Api::ApiController
           shipment_data['milestone']['driver_id'] = @user.id
           shipment_data['milestone']['damage_desc'] = shipment_data['damage']
           
-          #Update special instructions if exist special_instructions
-          if ! shipment_data['special_instructions'].nil? && shipment.special_instructions != shipment_data['special_instructions']
-              #Don't make effect to task get_response_file , we need disable timestamp for updated_at of Shipment
-              Shipment.record_timestamps=false
-              #Update value
-              shipment.special_instructions = shipment_data['special_instructions']
-              shipment.save
-              #Enable timestamp for updated_at of Shipment
-              Shipment.record_timestamps=true
-          end
-          
           action_code = ''
           #Set action_code for new milestone
           if shipment_data["milestone"]["action"]     
