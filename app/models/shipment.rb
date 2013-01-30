@@ -86,8 +86,13 @@ class Shipment < ActiveRecord::Base
       :damaged => damaged?,
       :hawb => hawb,
       :mawb => hawb,
-      :special_instructions => [special_instructions].delete_if{ |field| field.nil? || field.blank?}
+      :special_instructions => [special_instructions].delete_if{ |field| field.nil? || field.blank?},
+      :dangerous_goods =>  [dangerous_goods].delete_if{ |field| field.nil? || field.blank?},
     }
+    
+    unless hash[:dangerous_goods]
+        hash[:dangerous_goods] = hash[:dangerous_goods].html_safe
+    end
     
     #Parse pickup address
     origin_country_name = ''
