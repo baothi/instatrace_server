@@ -90,8 +90,8 @@ class Shipment < ActiveRecord::Base
       :dangerous_goods =>  [dangerous_goods].delete_if{ |field| field.nil? || field.blank?},
     }
     
-    unless hash[:dangerous_goods]
-        hash[:dangerous_goods] = hash[:dangerous_goods].html_safe
+    unless self.special_instructions.blank?
+        hash[:special_instructions] = self.special_instructions.html_safe
     end
     
     #Parse pickup address

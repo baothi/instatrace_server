@@ -42,7 +42,7 @@
           <th>
               <%= t(:text_special_instructions) %>
               <div class="special-instructions-text">
-                  <%= @shipment.special_instructions %>
+                  <%= @shipment.special_instructions.gsub(/\n/, "<br/>").html_safe %>
               </div>
               
           </th>
