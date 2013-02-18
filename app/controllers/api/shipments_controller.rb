@@ -143,9 +143,9 @@ class Api::ShipmentsController < Api::ApiController
                            puts "**********************Delete old file if existing****************"        
                        end
                        fsr_timestamp = Time.now
-                       day = fsr_timestamp.day
-                       hour = fsr_timestamp.hour
-                       min = fsr_timestamp.min
+                       day = fsr_timestamp.day < 10 ? '0' + fsr_timestamp.day.to_s : fsr_timestamp.day.to_s
+                       hour = fsr_timestamp.hour < 10 ? '0' + fsr_timestamp.hour.to_s : fsr_timestamp.hour.to_s
+                       min = fsr_timestamp.min < 10 ? '0' + fsr_timestamp.min.to_s : fsr_timestamp.min.to_s
                        
                        File.open(fsr_file,"w+") do |f|
                            f.write("QK #{iata}\n")
