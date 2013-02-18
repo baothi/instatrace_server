@@ -55,7 +55,9 @@ ActiveAdmin.register Milestone do
     column :damaged
     column :public
     column "Damage desription", :damage_desc
-    column "Registered", :created_at
+    column "Registered" do |mb|
+        render :partial => "/active_admin/milestones/created_at" , :locals => { :created_at => mb.created_time_with_timezone }
+    end
   end
 
   # table for show action

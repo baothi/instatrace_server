@@ -9,7 +9,7 @@ xml.milestones do
       xml.damaged milestone.damaged.to_s
       xml.public milestone.public.to_s
       xml.damage_desc milestone.damage_desc.to_s
-      xml.created_at milestone.created_at.to_s
+      xml.created_at milestone.created_time_with_timezone.to_s
     end
   end
 end
