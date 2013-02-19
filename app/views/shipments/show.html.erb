@@ -31,7 +31,7 @@
         <tr>
           <td valign="top"><%= number_with_delimiter(@shipment.weight.to_i) %></td>
           <td valign="top"><%= number_with_delimiter(@shipment.pieces_total.to_i) %></td>
-          <td valign="top"><%= @shipment.delivery.to_date rescue nil %></td>
+          <td valign="top"><%= @shipment.delivery_date.strftime("%b %d, %Y %H:%M") rescue nil %></td>
         </tr>
         
       </table>
