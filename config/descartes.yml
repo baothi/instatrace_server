@@ -4,9 +4,9 @@ descartes_wt:
   AWR: IDC
   NFD: AR2
   ARR: AR1
-  BKD: RT5
+  BKD: TR2
   CCD: CRC
-  TRM: TND
+  TRM: TN3
   MAN: RTC
   DLV: AR3
   DDL: DEL
@@ -26,20 +26,20 @@ wt_status:
   AR1: Arrived_Dest_Terminal
   RT5: Booked_with_carrier 
   CRC: Customs_Released/Cleared
-  TND: Tendered_to_Carrier
+  TN3: Tendered_to_Carrier
   RTC: Routing_Confirmed
   AR2: On_hand_-_Dest_terminal
-  AR3: Recovered_-_Dest_Terminal
+  AR3: Recovered_from_Carrier
   DEL: Delivered_w/Proof_of_Delivery
   REC: Recovered_Dest_Terminal
   RT2: Picked_up_from_Shipper
-  REC: Recovered_Dest_Terminal
   ITT: In_Transit
   TR4: Assigned_to_flight
   CUS: In_Customs_Clearance
   HLD: Shipment_on_Hold
   TR5: Confirmed_On_Board_Carrier
   MIS: Missing_EDI_Translation_Code
+  TR2: Enroute_to_Carrier
 carrier:
   "053": DUBFMEI
   "555": CHACSSU
