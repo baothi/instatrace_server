@@ -227,17 +227,28 @@ class Api::ShipmentsController < Api::ApiController
           
           milestone = shipment.milestones.create(shipment_data['milestone'])
           
+          #Params store base64 encode images data of POD image and signature image for Transpak service UploadPODDocument 
+          document_encoded_img = nil
+          signature_encoded_img = nil
+          
           if  shipment_data['document']
             document = milestone.milestone_documents.build(:doc_type => shipment_data['document']['doc_type'])
             document.name = create_image(shipment_data['document']['name'],'document')
             document.save
+            
+            # Base64 encode POD image ready for Transpak service UploadPODDocument
+            document_encoded_img = shipment_data['document']['name'].sub('data:image/bmp;base64,', '').sub('data:image/png;base64,', '')
           end
           
           if shipment_data['signature']
             sign = milestone.create_signature(:name      => shipment_data['signature']['name'],
                                               :email     => shipment_data['signature']['email'],
                                               :signature => create_image(shipment_data['signature']['signature'],'signature'))
+            
+            # Base64 encode signature image ready for Transpak service UploadPODDocument
+            signature_encoded_img = shipment_data['signature']['signature'].sub('data:image/bmp;base64,', '').sub('data:image/png;base64,', '')
           end
+          
           unless shipment_data['damage_photo'].nil? || shipment_data['damage_photo'].empty?
             shipment_data['damage_photo'].each do |image|
               milestone.damages.create(:photo => create_image(image,"damage"))
@@ -250,20 +261,21 @@ class Api::ShipmentsController < Api::ApiController
           if setting && setting.value == '1'
              hawb = shipment.hawb  
              piece_count = shipment.piece_count
-
+             
              #Call update status service from WordTrak             
              begin
                 client = Savon.client("http://freight.transpak.com/WTKServices/Shipments.asmx?WSDL")
                 response = client.request :update_status, body: {"HandlingStation" => "", "HAWB" => hawb, "UserName" => "instatrace", "StatusCode" => action_code}
                 if response.success?
-                   data = response.to_array(:update_status_response, :update_status_result).first      
+                   data = response.to_array(:update_status_response).first[:update_status_result]
+                   
                    if data == true
                       Rails.logger.info "*****************SUCCESS Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
                    else
                       Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb}"
                    end
                 end
-                
+                 
                 if milestone && milestone.action.to_s == 'delivered'
                     login_name = nil
                     signature_name = nil
@@ -280,13 +292,43 @@ class Api::ShipmentsController < Api::ApiController
                     response = client.request :submit_pod, body: {"UserInitials" => "US", "HAWB" => hawb, "UserName" => login_name, "PiecesDelivered" => piece_count.to_i, "Signer" => signature_name, "PODDateTime" => delivered_date} 
                     
                     if response.success?
-                       data = response.to_array(:update_status_response, :update_status_result).first      
+                       data = response.to_array(:submit_pod_response).first[:submit_pod_result]
                        if data == true
-                          Rails.logger.info "*****************SUCCESS SubmitPOD Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                          Rails.logger.info "*****************SUCCESS SubmitPOD Wordtrak!  for Shipment with HAWB: #{hawb}"
                        else
-                          Rails.logger.info "*****************ERROR SubmitPOD Wordtrak!  for Shipemt with HAWB: #{hawb}"
+                          Rails.logger.info "*****************ERROR SubmitPOD Wordtrak!  for Shipment with HAWB: #{hawb}"
                        end
                     end
+                   
+                    #Call UploadPODDocument service from WordTrak to upload signature image
+                    if ! signature_encoded_img.nil?
+                        response = client.request :upload_pod_document, body: {"HAWB" => hawb, "DocumentDataBase64" => signature_encoded_img, "DocumentExtension" => "jpg"} 
+                        
+                        if response.success?
+                           data = response.to_array(:upload_pod_document_response).first[:upload_pod_document_result]
+                           if data == true
+                              Rails.logger.info "*****************SUCCESS UploadPODDocument Wordtrak!  for Shipment upload signature image with HAWB: #{hawb}"
+                           else
+                              Rails.logger.info "*****************ERROR UploadPODDocument Wordtrak!  for Shipment upload signature image with HAWB: #{hawb}"
+                           end
+                        end
+                    end
+                    #End call UploadPODDocument service from WordTrak to upload signature image
+                    
+                    #Call UploadPODDocument service from WordTrak to upload POD image
+                    if ! document_encoded_img.nil?
+                        response = client.request :upload_pod_document, body: {"HAWB" => hawb, "DocumentDataBase64" => document_encoded_img, "DocumentExtension" => "jpg"} 
+                        
+                        if response.success?
+                           data = response.to_array(:upload_pod_document_response).first[:upload_pod_document_result]
+                           if data == true
+                              Rails.logger.info "*****************SUCCESS UploadPODDocument Wordtrak!  for Shipment upload POD image with HAWB: #{hawb}"
+                           else
+                              Rails.logger.info "*****************ERROR UploadPODDocument Wordtrak!  for Shipment upload POD image with HAWB: #{hawb}"
+                           end
+                        end
+                    end
+                    #End call UploadPODDocument service from WordTrak to upload POD image
                 end
              rescue Savon::Error => error
                   Rails.logger.info "*****************ERROR Update Status Wordtrak!  for Shipemt with HAWB: #{hawb} #{error}"
