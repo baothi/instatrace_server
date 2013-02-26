@@ -1,7 +1,7 @@
 AT7:
   RT2: pick-up
   BAB: back_at_base  
-  TN3: tendered_to_carrier
+  TR3: tendered_to_carrier
   AR3: recovered_from_carrier
   OFD: out_for_delivery
   IDL: delivered

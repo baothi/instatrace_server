@@ -6,7 +6,7 @@ descartes_wt:
   ARR: AR1
   BKD: TR2
   CCD: CRC
-  TRM: TN3
+  TRM: TR3
   MAN: RTC
   DLV: AR3
   DDL: DEL
@@ -26,7 +26,7 @@ wt_status:
   AR1: Arrived_Dest_Terminal
   RT5: Booked_with_carrier 
   CRC: Customs_Released/Cleared
-  TN3: Tendered_to_Carrier
+  TR3: Tendered_to_Carrier
   RTC: Routing_Confirmed
   AR2: On_hand_-_Dest_terminal
   AR3: Recovered_from_Carrier
