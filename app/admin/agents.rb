@@ -1,5 +1,13 @@
 ActiveAdmin.register Agent, :as => "Agents" do
-
+  action_item :only => :edit do
+    link_to "Delete Agent", admin_agent_path ,:confirm => "Are you sure you want to delete this?", :method => :delete
+  end
+  
+  # table for index action
+  index do
+    render :template => "/active_admin/agents/index"
+  end
+  
   controller do
     def create
       super
@@ -18,6 +26,8 @@ ActiveAdmin.register Agent, :as => "Agents" do
     end
 
   end
+  
+  
 
   # form for new/edit actions
   form :partial => "/active_admin/agents/form"

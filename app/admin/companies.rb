@@ -1,5 +1,8 @@
 ActiveAdmin.register Company do
-
+  action_item :only => :edit do
+    link_to "Delete Company", admin_company_path ,:confirm => "Are you sure you want to delete this?", :method => :delete
+  end
+  
   controller do
     def create
       super
@@ -18,6 +21,11 @@ ActiveAdmin.register Company do
     end
 
   end
-
+  
+  # table for index action
+  index do
+    render :template => "/active_admin/companies/index"
+  end
+  
   form :partial => "/active_admin/companies/form"
 end

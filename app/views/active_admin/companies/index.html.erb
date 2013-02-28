@@ -1,0 +1,122 @@
+<% if @companies.any? %>
+<% order_origin = params[:order] %>
+<% origin_param_order = params %>
+  <table class="index_table" id="agents_table">
+    <thead><tr>
+        <th width="15px" class="sortable <%= "sorted-asc" if order_origin == "id_asc" %><%= "sorted-desc" if order_origin == "id_desc" %>">
+            <% if order_origin == "id_desc" %>
+                <% origin_param_order[:order] = "id_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "id_desc" %>
+            <% end %>
+            
+            <%= link_to "ID", admin_companies_path + "?" + params.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "name_asc" %><%= "sorted-desc" if order_origin == "name_desc" %>">
+            <% if order_origin == "name_desc" %>
+                <% origin_param_order[:order] = "name_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "name_desc" %>
+            <% end %>
+            <%= link_to "Name", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "address_asc" %><%= "sorted-desc" if order_origin == "address_desc" %>">
+            <% if order_origin == "address_desc" %>
+                <% origin_param_order[:order] = "address_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "address_desc" %>
+            <% end %>
+            <%= link_to "Address", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "city_asc" %><%= "sorted-desc" if order_origin == "city_desc" %>">
+            <% if order_origin == "city_desc" %>
+                <% origin_param_order[:order] = "city_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "city_desc" %>
+            <% end %>
+            <%= link_to "City", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "phone_asc" %><%= "sorted-desc" if order_origin == "phone_desc" %>">
+            <% if order_origin == "phone_desc" %>
+                <% origin_param_order[:order] = "phone_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "phone_desc" %>
+            <% end %>
+            <%= link_to "Phone", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th  width="25px" class="sortable <%= "sorted-asc" if order_origin == "ext_asc" %><%= "sorted-desc" if order_origin == "ext_desc" %>">
+            <% if order_origin == "ext_desc" %>
+                <% origin_param_order[:order] = "ext_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "ext_desc" %>
+            <% end %>
+            <%= link_to "Ext", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th  width="25px" class="sortable <%= "sorted-asc" if order_origin == "zip_asc" %><%= "sorted-desc" if order_origin == "zip_desc" %>">
+            <% if order_origin == "zip_desc" %>
+                <% origin_param_order[:order] = "zip_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "zip_desc" %>
+            <% end %>
+            <%= link_to "Zip", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "created_at_asc" %><%= "sorted-desc" if order_origin == "created_at_desc" %>">
+            <% if order_origin == "created_at_desc" %>
+                <% origin_param_order[:order] = "created_at_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "created_at_desc" %>
+            <% end %>
+            <%= link_to "Created At", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "updated_at_asc" %><%= "sorted-desc" if order_origin == "updated_at_desc" %>">
+            <% if order_origin == "updated_at_desc" %>
+                <% origin_param_order[:order] = "updated_at_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "updated_at_desc" %>
+            <% end %>
+            <%= link_to "Updated At", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "created_by_asc" %><%= "sorted-desc" if order_origin == "created_by_desc" %>">
+            <% if order_origin == "created_by_desc" %>
+                <% origin_param_order[:order] = "created_by_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "created_by_desc" %>
+            <% end %>
+            <%= link_to "Created By", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th class="sortable <%= "sorted-asc" if order_origin == "updated_by_asc" %><%= "sorted-desc" if order_origin == "updated_by_desc" %>">
+            <% if order_origin == "updated_by_desc" %>
+                <% origin_param_order[:order] = "updated_by_asc"%>
+            <% else %>
+                <% origin_param_order[:order] = "updated_by_desc" %>
+            <% end %>
+            <%= link_to "Updated By", admin_companies_path + "?" + origin_param_order.to_query %>
+        </th>
+        <th width="105px"></th>
+    </tr></thead>
+    <% @companies.each do |company| %>
+      <tr>
+        <td width="15px"><%= link_to company.id, admin_company_path(company.id) %></td>
+        <td><%= company.name %></td>
+        <td><%= company.address %> </td>
+        <td><%= company.city %> </td>
+        <td><%= company.phone %> </td>
+        <td width="25px"><%= company.ext %> </td>
+        <td width="25px"><%= company.zip %> </td>
+        <td><%= company.created_at %> </td>
+        <td><%= company.updated_at %> </td>
+        <td><%= company.created_by %> </td>
+        <td><%= company.updated_by %> </td>
+        <td width="105px"> 
+            <%= link_to I18n.t('active_admin.view'), resource_path(company), :class => "member_link view_link" %>
+            <%= link_to I18n.t('active_admin.edit'), edit_resource_path(company), :class => "member_link edit_link" if can?(:edit, Company) %>
+            <%= link_to I18n.t('active_admin.delete'), resource_path(company), :method => :delete, :confirm => I18n.t('active_admin.delete_confirmation'), :class => "member_link delete_link" if can?(:delete, Company) %>
+         </td>
+      </tr>  
+    <% end %>
+  </table>
+  <br />
+  <%= paginate @companies %>
+<% else %>
+  <%= t(:text_no_companies_found) %>
+<% end %>
