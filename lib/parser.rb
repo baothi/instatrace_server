@@ -159,17 +159,17 @@ class Parser
                         setting = Setting.find_by_name('EnableWTUpdateStatus')
                         
                         if setting && setting.value == '1'
-                            action_code = nil
-                            if TRANSPAK['AT7'].has_key?(milestone.action_code)
-                                action_code = TRANSPAK['AT7'].key(milestone.action_code)
-                            end
+                            action_code = milestone.action_code
+                            # if TRANSPAK['AT7'].has_key?(milestone.action_code)
+                                # action_code = TRANSPAK['AT7'].key(milestone.action_code)
+                            # end
                             
-                            #action code invalid, don't update WordTrak
-                            if action_code.nil?
-                                puts "***************** Invalid action status code when update Status Wordtrak!  for Shipemt with HAWB: #{shipment.hawb}, milestone.action_code: #{milestone.action_code}"
-                                Rails.logger.info "***************** Invalid action status code when update Status Wordtrak!  for Shipemt with HAWB: #{shipment.hawb}, milestone.action_code: #{milestone.action_code}"
-                                next
-                            end
+                            # #action code invalid, don't update WordTrak
+                            # if action_code.nil?
+                                # puts "***************** Invalid action status code when update Status Wordtrak!  for Shipemt with HAWB: #{shipment.hawb}, milestone.action_code: #{milestone.action_code}"
+                                # Rails.logger.info "***************** Invalid action status code when update Status Wordtrak!  for Shipemt with HAWB: #{shipment.hawb}, milestone.action_code: #{milestone.action_code}"
+                                # next
+                            # end
                             
                             hawb = shipment.hawb  
                             piece_count = shipment.piece_count
@@ -350,4 +350,3 @@ class Parser
     end
   end
 end
-
