@@ -120,9 +120,37 @@ class Parser
             milestone.action_code = wordtrak_status
             
             begin
+                # Ready parse time data to UTC timezone (is current timezone config)
+                Time.zone = "UTC"
+                time_now = Time.now
                 hour = "00"
                 minute = "00"
                 second = "00"
+                date = time_now.day.to_s
+                month = time_now.month.to_s
+                year = time_now.year.to_s
+                ################################################
+                # Get receive time from data file FSA
+                # Example data
+                ################################################
+                # QU SFOTRPA
+                # .ZRHFMLX 281936
+                # FSA/6
+                # 724-13941152SFOMAD/T3K84.0
+                # DLV/20JAN0710/MAD/T3K84.0
+                #################################################
+                data_array = self.data.data.gsub(/\n/, '~').split('~')
+                if ! data_array.blank? && data_array.count > 1
+                    # Time string line 2, the second string text with partern DDHHMM (D= day, H= hour, M= minute) 
+                    string_time = data_array[1].split(' ')[1]
+                    #Check valid before parse time
+                    if ! string_time.match(/^[0-9]+$/).blank? && string_time.length > 4
+                        date = string_time[0..1]
+                        hour = string_time[2..3]
+                        minute = string_time[4..5]
+                    end
+                end
+                
                 # Get datetime section from array
                 date_section = m[1]
                 
@@ -131,17 +159,16 @@ class Parser
                     date_section = m[2]
                 end
                 
-                if date_section.length > 5 #Date format DDMMHHMM
-                   hour = date_section[5..6]
-                   minute = date_section[7..8]      
+                if months.has_key?(date_section[2..4])
+                    if date_section.length > 5 #Date format DDMMHHMM
+                       hour = date_section[5..6]
+                       minute = date_section[7..8]      
+                    end
+                    date = date_section[0..1]
+                    month = months["#{date_section[2..4]}"]
                 end
-                # Ready parse time data to UTC timezone (is current timezone config)
-                Time.zone = "UTC"
-                date = date_section[0..1]
-                month = months["#{date_section[2..4]}"]
-                year = Time.now.year
                 
-                if  month.to_i < 10
+                if month.to_i < 10
                     month ="0#{month}"
                 end
                 
