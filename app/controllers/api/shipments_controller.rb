@@ -302,7 +302,7 @@ class Api::ShipmentsController < Api::ApiController
                    
                     #Call UploadPODDocument service from WordTrak to upload signature image
                     if ! signature_encoded_img.nil?
-                        response = client.request :upload_pod_document, body: {"HAWB" => hawb, "DocumentDataBase64" => signature_encoded_img, "DocumentExtension" => "jpg"} 
+                        response = client.request :upload_pod_document, body: {"HAWB" => hawb, "DocumentDataBase64" => signature_encoded_img, "DocumentExtension" => "signature.jpg"} 
                         
                         if response.success?
                            data = response.to_array(:upload_pod_document_response).first[:upload_pod_document_result]
