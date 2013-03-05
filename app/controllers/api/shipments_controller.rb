@@ -164,6 +164,7 @@ class Api::ShipmentsController < Api::ApiController
                        end
                        # End create file and send file to FTP server
                        ftp.close
+                       Rails.logger.info "*****************SEND FSR SUCCESS for Shipemt with HAWB: #{@shipment.hawb}, time: #{fsr_timestamp}"
                    rescue Exception => e
                        puts "********************* Send request FSR to Descartes FTP server error **************"
                        puts "#{e.message}"

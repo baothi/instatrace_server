@@ -77,20 +77,27 @@ namespace :import do
     list_carrier = DESCARTES_CARRIER['carrier']
     descartes_config = COMMON['config']['ftp']['descartes']
     
-    ftp = Net::FTP::new(descartes_config["host"])
+    # ftp = Net::FTP::new(descartes_config["host"])
     
-    if ftp.login(descartes_config["username"], descartes_config["password"])
-        ftp.passive = true
-        begin_date = Date.today.beginning_of_day.utc
-        end_date = Date.today.end_of_day.utc
+    # if ftp.login(descartes_config["username"], descartes_config["password"])
+        # ftp.passive = true
+        begin_date = 3.days.ago.beginning_of_day.utc #Date.today.beginning_of_day.utc
+        #end_date = Date.today.end_of_day.utc
         #Get shipments which were created/updated mawb on today ready to get response FSA from Descartes
-        condition = "mawb is not null and mawb <> '' and ((created_at >= ? and created_at <= ?) or (updated_at >= ? and updated_at <= ?))"
-        @shipments_updated_today = Shipment.where(condition,begin_date,end_date,begin_date,end_date)
-        
+        condition = "mawb is not null and mawb <> '' and (created_at >= ? or updated_at >= ?)"
+        @shipments_updated_today = Shipment.where(condition,begin_date,begin_date)
+        puts "CONDITION begin_date:#{begin_date}, total:#{@shipments_updated_today.count}"
+        index_count = 0
         # Loop for each shipments were updated
         @shipments_updated_today.each do |item|
+             index_count += 1
+             fsr_timestamp = Time.now
+             timestamp = Time.new.to_time.to_i.to_s
              #Get shipment detail
              @shipment = item
+             puts "--------------------STAR #{index_count}--------------------"
+             puts "RUN TIME: #{fsr_timestamp}"
+             puts "FOR SHIPMENT id:#{@shipment.id}, hawb:#{@shipment.hawb}, mawb:#{@shipment.mawb}, created_at:#{@shipment.created_at}, updated_at:#{@shipment.updated_at} "
              receiver_id = @shipment.mawb[0..2]
              real_mawb = @shipment.mawb[3..-1]
              iata = DESCARTES_CARRIER['carrier'][receiver_id]
@@ -99,56 +106,239 @@ namespace :import do
              # 3 characters is air carrier code which is mapped with IATA code in file descartes.yml
              # 8 next characters for real MAWB
              if @shipment.mawb.length != 11 || iata.nil? 
-               puts "**********************HAWB #{@shipment.hawb} : Invalid MAWB **********************"
+               puts "MAWB is blank"
              else
-                 #Start begin 1
-                 begin
-                    timestamp = Time.new.to_time.to_i.to_s
-                    file_path = "/home/descartesftp/cargoimp#{timestamp}.FSA"
-                    # Go to root
-                    ftp.chdir('/')
-                    ftp.chdir(iata).nil?
-                    ftp.gettextfile("cargoimp.FSA",file_path)
+                 ftp = Net::FTP::new(descartes_config["host"])
+                 ###################################################################################
+                 #begin for if check for FTP
+                 ###################################################################################
+                 if ftp.login(descartes_config["username"], descartes_config["password"])
+                    ftp.passive = true
+                    ###################################################################################
+                    #Send FSR to get next status
+                    ###################################################################################
+                    begin
+                        fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR_TASK.txt")
+                        if File.exists?(fsr_file)
+                            File.delete
+                        end
+                        # fsr_timestamp = Time.now
+                        day = fsr_timestamp.day < 10 ? '0' + fsr_timestamp.day.to_s : fsr_timestamp.day.to_s
+                        hour = fsr_timestamp.hour < 10 ? '0' + fsr_timestamp.hour.to_s : fsr_timestamp.hour.to_s
+                        min = fsr_timestamp.min < 10 ? '0' + fsr_timestamp.min.to_s : fsr_timestamp.min.to_s
+                        
+                        File.open(fsr_file,"w+") do |f|
+                            f.write("QK #{iata}\n")
+                            f.write(".SFOTRPA #{day}#{hour}#{min}\n")
+                            f.write("FSR\n")
+                            f.write("#{receiver_id}-#{real_mawb}\n")
+                        end
+                        
+                        #Send FSR
+                        ftp.puttextfile(fsr_file,"FSR#{fsr_timestamp}.txt")
+                        
+                        puts "SEND FSR SUCCESS"
+                    rescue Exception => e
+                        puts "SEND FSR ERROR (error message from Descartes) ==> #{e.message}"
+                    end
+                    ###################################################################################
+                    #End send FSR file to get next status
+                    ###################################################################################
                     
-                    # Open this file to get receiver_id and real MAWB
-                    if File.exists?(file_path)
-                        data_array = File.read(file_path).split("\n")
-                        # Line 4 in file should be: 006-97844342SFOPTY/T1L39.7
-                        if data_array.count > 2
-                            receiver_id_real_mawb = data_array[3][0..11]
-                            # Compare response request content match with our request or not
-                            # If not, delete file FSA
-                            if receiver_id_real_mawb == receiver_id + "-" + real_mawb
-                                puts "HAWB #{@shipment.hawb} done --- File FSA: #{file_path}"
-                            else
-                                #Check valid for mawb, if this mawb is not exist in shipments table, need to delete this FSA file
-                                mawb_valid_in_db = receiver_id_real_mawb.gsub("-","")
-                                check_mawb_in_db = Shipment.where("mawb = ?",mawb_valid_in_db)
-                                
-                                if check_mawb_in_db.blank?
-                                    #Delete the file FSA
-                                    FileUtils.rm(file_path)
+                    ###################################################################################
+                    #Start begin get response FSA file
+                    ###################################################################################
+                    begin
+                        # timestamp = Time.new.to_time.to_i.to_s
+                        file_path = "/home/descartesftp/cargoimp#{timestamp}_#{@shipment.hawb}.FSA"
+                        # Go to root
+                        ftp.chdir('/')
+                        ftp.chdir(iata).nil?
+                        ftp.gettextfile("cargoimp.FSA",file_path)
+                        
+                        # Open this file to get receiver_id and real MAWB
+                        if File.exists?(file_path)
+                            data_array = File.read(file_path).split("\n")
+                            # Line 4 in file should be: 006-97844342SFOPTY/T1L39.7
+                            if data_array.count > 2
+                                receiver_id_real_mawb = data_array[3][0..11]
+                                # Compare response request content match with our request or not
+                                # If not, delete file FSA
+                                if receiver_id_real_mawb == receiver_id + "-" + real_mawb
+                                    puts "IMPORT SUCCESS : File FSA: #{file_path}"
+                                else
+                                    #Check valid for mawb, if this mawb is not exist in shipments table, need to delete this FSA file
+                                    mawb_valid_in_db = receiver_id_real_mawb.gsub("-","")
+                                    check_mawb_in_db = Shipment.where("mawb = ?",mawb_valid_in_db)
+                                    
+                                    if check_mawb_in_db.blank?
+                                        #Delete the file FSA
+                                        FileUtils.rm(file_path)
+                                    end
                                 end
                             end
                         end
+                    rescue Exception => e
+                        # Remove response file empty
+                        FileUtils.rm(file_path) if File.exists?(file_path)
+                        #Continue loop other milestone
+                        puts "GET RESPONSE FSA ERROR (error message from Descartes) ==> #{e.message}"
+                        #next
                     end
-                 rescue Exception => e
-                   # Remove response file empty
-                   FileUtils.rm(file_path) if File.exists?(file_path)
-                   #Continue loop other milestone
-                   puts "HAWB #{@shipment.hawb} error : #{e.message} --- shipment: mawb = #{@shipment.mawb}, created_at = #{@shipment.created_at}, updated_at = #{@shipment.updated_at}"
-                   next
+                    ###################################################################################
+                    #End begin get response FSA file
+                    ###################################################################################
                  end
-                 #End begin 1
+                 ###################################################################################
+                 #End for if check for FTP
+                 ###################################################################################
+                 ftp.close
              end
              #End check valid MAWB code
+             puts "--------------------END--------------------"
         end
         #End loop milestone
-    end
-    #Close FTP
-    ftp.close
+    # end
+    # #Close FTP
+    # ftp.close
   end
-
+  
+  # This task will get response FSA from Descartes server for some special HAWBs
+  task :descartes_get_response_test => :environment do
+    puts "**********************RUN TASK descartes_get_response**********************"
+    require 'net/ftp'
+    date = Date.today.to_s("YYYY-MM-DD")
+    puts "Date : #{date}"
+    
+    list_carrier = DESCARTES_CARRIER['carrier']
+    descartes_config = COMMON['config']['ftp']['descartes']
+    
+    # ftp = Net::FTP::new(descartes_config["host"])
+    
+    # if ftp.login(descartes_config["username"], descartes_config["password"])
+        # ftp.passive = true
+        begin_date = 3.days.ago.beginning_of_day.utc #Date.today.beginning_of_day.utc
+        #end_date = Date.today.end_of_day.utc
+        #Get shipments which were created/updated mawb on today ready to get response FSA from Descartes
+        condition = "mawb is not null and mawb <> '' and hawb in (2215024,345010) and (created_at >= ? or updated_at >= ?)"
+        @shipments_updated_today = Shipment.where(condition,begin_date,begin_date)
+        puts "CONDITION begin_date:#{begin_date}, total:#{@shipments_updated_today.count}"
+        index_count = 0
+        # Loop for each shipments were updated
+        @shipments_updated_today.each do |item|
+             index_count += 1
+             fsr_timestamp = Time.now
+             timestamp = Time.new.to_time.to_i.to_s
+             #Get shipment detail
+             @shipment = item
+             puts "--------------------STAR #{index_count}--------------------"
+             puts "RUN TIME: #{fsr_timestamp}"
+             puts "FOR SHIPMENT id:#{@shipment.id}, hawb:#{@shipment.hawb}, mawb:#{@shipment.mawb}, created_at:#{@shipment.created_at}, updated_at:#{@shipment.updated_at} "
+             receiver_id = @shipment.mawb[0..2]
+             real_mawb = @shipment.mawb[3..-1]
+             iata = DESCARTES_CARRIER['carrier'][receiver_id]
+             
+             # MAWB code must be 11 characters 
+             # 3 characters is air carrier code which is mapped with IATA code in file descartes.yml
+             # 8 next characters for real MAWB
+             if @shipment.mawb.length != 11 || iata.nil? 
+               puts "MAWB is blank"
+             else
+                 ftp = Net::FTP::new(descartes_config["host"])
+                 ###################################################################################
+                 #begin for if check for FTP
+                 ###################################################################################
+                 if ftp.login(descartes_config["username"], descartes_config["password"])
+                    ftp.passive = true
+                    ###################################################################################
+                    #Send FSR to get next status
+                    ###################################################################################
+                    begin
+                        fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR_TASK.txt")
+                        if File.exists?(fsr_file)
+                            File.delete
+                        end
+                        # fsr_timestamp = Time.now
+                        day = fsr_timestamp.day < 10 ? '0' + fsr_timestamp.day.to_s : fsr_timestamp.day.to_s
+                        hour = fsr_timestamp.hour < 10 ? '0' + fsr_timestamp.hour.to_s : fsr_timestamp.hour.to_s
+                        min = fsr_timestamp.min < 10 ? '0' + fsr_timestamp.min.to_s : fsr_timestamp.min.to_s
+                        
+                        File.open(fsr_file,"w+") do |f|
+                            f.write("QK #{iata}\n")
+                            f.write(".SFOTRPA #{day}#{hour}#{min}\n")
+                            f.write("FSR\n")
+                            f.write("#{receiver_id}-#{real_mawb}\n")
+                        end
+                        
+                        #Send FSR
+                        # ftp.puttextfile(fsr_file,"FSR#{fsr_timestamp}.txt")
+                        
+                        puts "SEND FSR SUCCESS"
+                    rescue Exception => e
+                        puts "SEND FSR ERROR (error message from Descartes) ==> #{e.message}"
+                    end
+                    ###################################################################################
+                    #End send FSR file to get next status
+                    ###################################################################################
+                    
+                    ###################################################################################
+                    #Start begin get response FSA file
+                    ###################################################################################
+                    begin
+                        # timestamp = Time.new.to_time.to_i.to_s
+                        file_path = "/home/descartesftp/cargoimp#{timestamp}_#{@shipment.hawb}.FSA"
+                        # Go to root
+                        ftp.chdir('/')
+                        ftp.chdir(iata).nil?
+                        # ftp.gettextfile("cargoimp.FSA",file_path)
+                        
+                        # # Open this file to get receiver_id and real MAWB
+                        # if File.exists?(file_path)
+                            # data_array = File.read(file_path).split("\n")
+                            # # Line 4 in file should be: 006-97844342SFOPTY/T1L39.7
+                            # if data_array.count > 2
+                                # receiver_id_real_mawb = data_array[3][0..11]
+                                # # Compare response request content match with our request or not
+                                # # If not, delete file FSA
+                                # if receiver_id_real_mawb == receiver_id + "-" + real_mawb
+                                    # puts "IMPORT SUCCESS : File FSA: #{file_path}"
+                                # else
+                                    # #Check valid for mawb, if this mawb is not exist in shipments table, need to delete this FSA file
+                                    # mawb_valid_in_db = receiver_id_real_mawb.gsub("-","")
+                                    # check_mawb_in_db = Shipment.where("mawb = ?",mawb_valid_in_db)
+#                                     
+                                    # if check_mawb_in_db.blank?
+                                        # #Delete the file FSA
+                                        # FileUtils.rm(file_path)
+                                    # end
+                                # end
+                            # end
+                        # end
+                    rescue Exception => e
+                        # Remove response file empty
+                        FileUtils.rm(file_path) if File.exists?(file_path)
+                        #Continue loop other milestone
+                        puts "GET RESPONSE FSA ERROR (error message from Descartes) ==> #{e.message}"
+                        #next
+                    end
+                    ###################################################################################
+                    #End begin get response FSA file
+                    ###################################################################################
+                 end
+                 ###################################################################################
+                 #End for if check for FTP
+                 ###################################################################################
+                 ftp.close
+             end
+             #End check valid MAWB code
+             puts "--------------------END--------------------"
+        end
+        #End loop milestone
+    # end
+    # #Close FTP
+    # ftp.close
+  end
+  
   task :getfile => :environment do 
     require 'net/ftp'
     fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
