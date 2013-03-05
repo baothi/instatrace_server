@@ -159,10 +159,12 @@ class Parser
                     date_section = m[2]
                 end
                 
+                is_date_format_ddmm = true
                 if months.has_key?(date_section[2..4])
                     if date_section.length > 5 #Date format DDMMHHMM
                        hour = date_section[5..6]
-                       minute = date_section[7..8]      
+                       minute = date_section[7..8]
+                       is_date_format_ddmm = false
                     end
                     date = date_section[0..1]
                     month = months["#{date_section[2..4]}"]
@@ -177,7 +179,13 @@ class Parser
                 milestone.created_at = Time.zone.parse(pre_time)
                 
                 #Check milestone exist or not
-                milestone_exist = Milestone.where(:shipment_id => milestone.shipment_id, :driver_id => milestone.driver_id, :completed => 1, :action => milestone.action,:action_code => milestone.action_code, :created_at => milestone.created_at)
+                
+                if is_date_format_ddmm
+                    milestone_exist = Milestone.where(:shipment_id => milestone.shipment_id, :driver_id => milestone.driver_id, :completed => 1, :action => milestone.action,:action_code => milestone.action_code)
+                else
+                    milestone_exist = Milestone.where(:shipment_id => milestone.shipment_id, :driver_id => milestone.driver_id, :completed => 1, :action => milestone.action,:action_code => milestone.action_code, :created_at => milestone.created_at)
+                end
+                
                 if milestone_exist.blank?
                     #Check milestone save success or not
                     if milestone.save
