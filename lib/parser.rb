@@ -181,7 +181,18 @@ class Parser
                 #Check milestone exist or not
                 
                 if is_date_format_ddmm
+                    #With format DDMM, only need check created_at.day and created_at.month of milestone to make sure record is duplicate
+                    have_duplicate = false
                     milestone_exist = Milestone.where(:shipment_id => milestone.shipment_id, :driver_id => milestone.driver_id, :completed => 1, :action => milestone.action,:action_code => milestone.action_code)
+                    milestone_exist.each do |m|
+                        if m.created_at.utc.day.to_i == date.to_i && m.created_at.utc.month.to_i == month.to_i
+                            have_duplicate = true
+                        end
+                    end
+                    
+                    if ! have_duplicate
+                        milestone_exist = nil
+                    end
                 else
                     milestone_exist = Milestone.where(:shipment_id => milestone.shipment_id, :driver_id => milestone.driver_id, :completed => 1, :action => milestone.action,:action_code => milestone.action_code, :created_at => milestone.created_at)
                 end
