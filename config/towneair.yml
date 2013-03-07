@@ -1,0 +1,10 @@
+AT7:  
+  P1: departed_transfer_terminal
+  X1: arrived_destination_terminal
+  X3: tendered_to_carrier
+  X4: arrived_transfer_terminal
+  X9: pick-up
+  AF: departed_origin_terminal   
+  J1: out_for_delivery
+  D1: completed_unloading/recovered
+

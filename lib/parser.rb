@@ -9,9 +9,9 @@ class Parser
       if file_type && file_type == '214'
           raise 'File has wrong format' unless self.isa?
       end
-      if parser_type && parser_type == 'milestones_forwardair'        
+      if parser_type && ( parser_type == 'milestones_forwardair' || parser_type == 'milestones_towneair')
         plain = data.gsub(/\r/, '').split('~').map{|line| line.split('*')}
-
+        
       elsif parser_type && parser_type == 'milestones_descartes'        
         #Descartes is not use 214 standard 
         fsa = data.gsub(/\n/, '~').split('~') #TODO              
@@ -64,7 +64,11 @@ class Parser
       user = User.find_by_login('ForwardAir')
       driver_id = user.id if user      
       self.data.actions.each {|a| create_milestones_forwardair(a, driver_id, forwardair_status) if a && driver_id}
-    
+    elsif options[:parser_type] && options[:parser_type] == 'milestones_towneair'
+      forwardair_status = YAML::load(File.open(File.join(Rails.root, "config", "towneair.yml")))
+      user = User.find_by_login('TowneAir')
+      driver_id = user.id if user
+      self.data.actions.each {|a| create_milestones_towneair(a, driver_id, forwardair_status) if a && driver_id}
     elsif options[:parser_type] && options[:parser_type] == 'milestones_descartes'
       descartes_status =  YAML::load(File.open(File.join(Rails.root, "config", "descartes.yml")))
       user = User.find_by_login('Descartes')
@@ -258,6 +262,67 @@ class Parser
   end
 
   def create_milestones_forwardair(action, driver_id, status_maps)
+    b10 = action.find{|d| d.first.eql? "B10"}
+    
+    return if action.empty? || !b10 
+    
+    mawb = ''
+    if b10 
+      mawb = b10[1][4..-1]        
+    end
+    
+    shipments = Shipment.where('mawb = ?', mawb)
+
+    return if shipments.nil? || (shipments && shipments.count == 0)
+    shipments.each do |shipment|
+        shipment_id = shipment.id   
+        #Create new milestone
+        milestone = Milestone.new    
+        milestone.shipment_id = shipment_id
+        milestone.driver_id = driver_id
+        milestone.completed = 1    
+        # Default location of Forward Air Inc
+        #latitude = 36.1942916
+        #longitude = -82.80581699999999
+
+        #zone = RestClient.get("http://api.geonames.org/timezone?lat=#{latitude}&lng=#{longitude}&username=instatrace")    
+        #milestone.timezone = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
+       
+        at7 = action.find{|d| d[0] == "AT7"}
+        
+        if at7 && at7[1]        
+          milestone.action = status_maps['AT7'][at7[1]]
+          milestone.action_code = at7[1]
+        end        
+
+        utc_offset = nil
+        if at7 && at7[7]           
+           utc_offset = -6.0 if at7[7] == 'CT'
+           utc_offset = -5.0 if at7[7] == 'ET'
+           utc_offset = -8.0 if at7[7] == 'PT'
+           utc_offset = -5.0 if at7[7] == 'LT'
+        end
+
+        if at7 && at7[5] && at7[6]            
+           milestone.created_at =DateTime.parse(at7[5] + at7[6]).in_time_zone(ActiveSupport::TimeZone[utc_offset].name)
+        end
+       
+        unless milestone.save!          
+          @errors << {
+            :shipment_id => milestone.shipment_id,
+            :message => milestone.errors.full_messages.join("; "),
+            :full_message => "Milestone with shipment ID: (#{milestone.shipment_id}) was not saved due to next errors: #{milestone.errors.full_messages.join("; ")}"
+          }
+          puts self.errors.last[:full_message]
+        end            
+
+        puts "****************************Imported Milestone of shipment #ID:#{shipment_id }, HAWB = #{shipment.hawb}, MAWB = #{shipment.mawb}"
+
+    end#end shipments.each 
+           
+  end
+  
+  def create_milestones_towneair(action, driver_id, status_maps)
     b10 = action.find{|d| d.first.eql? "B10"}
     
     return if action.empty? || !b10 

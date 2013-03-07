@@ -4,3 +4,9 @@ config:
         host: ftp.myvan.descartes.com
         username: mhenley
         password: LdMF9m+f
+     towneair:
+        host: ftp.towneair.com
+        username: Transpak
+        password: r5tyghu8
+        remotedir: /Instatrace
+        localdir: /home/towneairftp

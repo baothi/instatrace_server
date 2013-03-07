@@ -37,6 +37,26 @@ namespace :import do
           end
        end
     end
+    
+    setting = Setting.find_by_name('EnableTowneAirIntegration')
+    if setting && setting.value == '1'
+       towneair_path = "/home/towneairftp/"
+       old_path = "/home/towneairftp/old/"
+       parse_files = Dir.glob(towneair_path+'*.214')
+       
+       parse_files.each do |file|
+          begin
+              Parser.new(:file_name => file, :path => '',:parser_type => 'milestones_towneair', :file_type => '214')
+              FileUtils.mv(file, old_path + Pathname.new(file).basename.to_s)
+              puts "==============================Updated Towne Air Milestones: #{file}"
+          rescue Exception => e
+              message = e.message
+              puts "==============================Updated Towne Air Milestones: #{file} , error: #{message}"
+              next
+          end
+       end
+    end
+    
     setting = Setting.find_by_name('EnableDescartesIntegration')    
     if setting && setting.value == '1'    
        descartes_path = "/home/descartesftp/"
@@ -215,6 +235,45 @@ namespace :import do
     # ftp.close
   end
   
+  #Task run to get all files 214 from TowneAir FTP server 
+  task :towneair_ftp => :environment do
+    puts "**********************RUN TASK TowneAir FTP get files 214**********************"
+    require 'net/ftp'
+    ftp_config = COMMON['config']['ftp']['towneair']
+    
+    site = ftp_config['host']
+    user = ftp_config['username']
+    pwd = ftp_config['password']
+    remote_dir = ftp_config['remotedir']
+    local_dir = ftp_config['localdir']
+    file_extension = "214"
+    begin
+        ftp = Net::FTP::new(site)
+        
+        if ftp && ftp.login(user, pwd)
+            ftp.passive = true
+            ftp.chdir(remote_dir).nil?
+            
+            fileList = ftp.nlst("*.#{file_extension}")
+            
+            fileList.each do |file|
+                local_file_path = "#{local_dir}/#{file}"
+                if File.exists?(local_file_path)
+                    FileUtils.rm(local_file_path)
+                end
+                ftp.getbinaryfile(file,local_file_path) #ftp.gettextfile(file,local_file_path)
+                ftp.delete(file)
+            end
+        end
+        ftp.close
+    rescue Exception => e
+        if ftp
+          ftp.close
+        end
+        puts "EXCEPTION ==> #{e.message}"
+    end
+  end
+ 
   task :getfile => :environment do 
     require 'net/ftp'
     fsr_file = File.join(Rails.root, "tmpfile","descartes", "FSR.txt")
