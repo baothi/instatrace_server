@@ -57,6 +57,7 @@ class Parser
     self.data = EDITransaction.new(options[:data] || IO.read(files_path), options[:parser_type], options[:file_type])
     raise 'Data is not defined.' if self.data.nil?
     forwardair_status = nil
+    towneair_status = nil
     descartes_status = nil
     
     if options[:parser_type] && options[:parser_type] == 'milestones_forwardair'
@@ -65,10 +66,10 @@ class Parser
       driver_id = user.id if user      
       self.data.actions.each {|a| create_milestones_forwardair(a, driver_id, forwardair_status) if a && driver_id}
     elsif options[:parser_type] && options[:parser_type] == 'milestones_towneair'
-      forwardair_status = YAML::load(File.open(File.join(Rails.root, "config", "towneair.yml")))
+      towneair_status = YAML::load(File.open(File.join(Rails.root, "config", "towneair.yml")))
       user = User.find_by_login('TowneAir')
       driver_id = user.id if user
-      self.data.actions.each {|a| create_milestones_towneair(a, driver_id, forwardair_status) if a && driver_id}
+      self.data.actions.each {|a| create_milestones_towneair(a, driver_id, towneair_status) if a && driver_id}
     elsif options[:parser_type] && options[:parser_type] == 'milestones_descartes'
       descartes_status =  YAML::load(File.open(File.join(Rails.root, "config", "descartes.yml")))
       user = User.find_by_login('Descartes')
