@@ -113,7 +113,7 @@ class Parser
             wordtrak_status = status_maps['descartes_wt'][m[0]]
             #Check this status action exist in milestone or not
             #Skip for OSI status code
-            if m[0] == 'OSI'
+            if m[0] == 'OSI'|| m[0] == 'DIS'
                 next
             end
             #Create new milestone

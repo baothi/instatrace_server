@@ -96,6 +96,10 @@
     <th style="width:62px;"><%= t(:column_note) %></th>
   </tr></thead>
   <% @shipment.milestones.completed.order("updated_at DESC").each do |ms| %>
+    <% if ms.action_code == 'DLY'
+          next
+       end
+    %>
     <tr>
       <td><%= ms.created_time_with_timezone %></td>
       <td> <strong><%= ms.driver.try(:last_name) %><%= ", " + ms.driver.try(:first_name) if ! ms.driver.try(:first_name).nil? %> </strong> </td>
