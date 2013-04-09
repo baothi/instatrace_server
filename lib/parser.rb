@@ -330,7 +330,7 @@ class Parser
     
     mawb = ''
     if b10 
-      mawb = b10[1]        
+      mawb = b10[1]
     end
     
     shipments = Shipment.where('mawb = ?', mawb)
