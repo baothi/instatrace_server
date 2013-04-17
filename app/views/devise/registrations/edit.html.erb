@@ -1,3 +1,5 @@
+<%= controller.controller_name %>
+<%= controller.action_name %>
 <div class="container">
   <div class="part pwd">
   
@@ -22,33 +24,35 @@
       <div><%= f.submit t(:button_save), :class => "btn btn-danger" %></div>
     <% end %>
   </div>
+  <!--
   <div class="part damage">
-    <div class="event">
-      <h4><%= t(:header_damage_notifications) %></h4>
-      <%= form_for Notification.find_or_initialize_by_user_id_and_event_and_shipment_id(current_user.id, "damage", nil), :remote => true do |f| %>
-        <%= f.hidden_field :user_id %>
-        <%= f.hidden_field :event %>
-        <div class="notification common">
-          <%= check_box_tag "used", !f.object.new_record? %>
-          <span class="notify_label"><%= t(:text_notify_if_damaged) %></span>
-          <%= f.text_field "email", :placeholder => t(:placeholder_email) %>
-        </div>
-      <% end %>
-    </div>
-    <br />
-    <hr>
-    <div class="event">
-      <h4><%= t(:text_delay_notifications) %></h4>
-      <%= form_for Notification.find_or_initialize_by_user_id_and_event_and_shipment_id(current_user.id, "delay", nil), :remote => true do |f| %>
-        <%= f.hidden_field :user_id %>
-        <%= f.hidden_field :event %>
-        <div class="notification common">
-          <%= check_box_tag "used", !f.object.new_record? %>
-          <span class="notify_label"><%= t(:text_notify_if_delayed) %></span>
-          <%= f.text_field "email", :placeholder => t(:placeholder_email) %>
+      <div class="event">
+        <h4><%= t(:header_damage_notifications) %></h4>
+        <%= form_for Notification.find_or_initialize_by_user_id_and_event_and_shipment_id(current_user.id, "damage", nil), :remote => true do |f| %>
+          <%= f.hidden_field :user_id %>
+          <%= f.hidden_field :event %>
+          <div class="notification common">
+            <%= check_box_tag "used", !f.object.new_record? %>
+            <span class="notify_label"><%= t(:text_notify_if_damaged) %></span>
+            <%= f.text_field "email", :placeholder => t(:placeholder_email) %>
+          </div>
         <% end %>
       </div>
-    </div>
-  </div>
+      <br />
+      <hr>
+      <div class="event">
+        <h4><%= t(:text_delay_notifications) %></h4>
+        <%= form_for Notification.find_or_initialize_by_user_id_and_event_and_shipment_id(current_user.id, "delay", nil), :remote => true do |f| %>
+          <%= f.hidden_field :user_id %>
+          <%= f.hidden_field :event %>
+          <div class="notification common">
+            <%= check_box_tag "used", !f.object.new_record? %>
+            <span class="notify_label"><%= t(:text_notify_if_delayed) %></span>
+            <%= f.text_field "email", :placeholder => t(:placeholder_email) %>
+          <% end %>
+        </div>
+      </div>
+    </div>-->
+  
 </div>
   
