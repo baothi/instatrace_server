@@ -5,12 +5,24 @@
   <strong><%= number_with_delimiter(@milestone.shipment.pieces_total) %></strong>
   pcs weighting
   <strong><%= number_with_delimiter(@milestone.shipment.weight.to_i) %> </strong>
-  lbs. from
+  lbs.
+</p>
+<p>
+  From:
+</p>
+<p>
   <strong><%= raw @milestone.shipment.origin %> </strong>
-  <% unless @milestone.shipment.destination.blank? %>
-    to
-	  <strong><%= raw @milestone.shipment.destination.to_s %></strong>
-	<% end %>
+</p>
+
+<% unless @milestone.shipment.destination.blank? %>
+<p>  
+  To:
+</p>
+<p>
+  <strong><%= raw @milestone.shipment.destination.to_s %></strong>
+</p>
+<% end %>
+<p>
   has the following status:
 </p>
 <div>
@@ -33,7 +45,7 @@
   	</li>
   	<li>
   	  Location:
-  	  <%= link_to "https://maps.google.com/maps?&q=loc:#{@milestone.latitude},#{@milestone.longitude}&z=17", "https://maps.google.com/maps?&q=loc:#{@milestone.latitude},#{@milestone.longitude}&z=8", :target => :blank %>
+  	  <%= link_to "https://maps.google.com/maps?&q=loc:#{@milestone.latitude},#{@milestone.longitude}&z=20", "https://maps.google.com/maps?&q=loc:#{@milestone.latitude},#{@milestone.longitude}&z=8", :target => :blank %>
   	</li>
   </ul>
 </div>
