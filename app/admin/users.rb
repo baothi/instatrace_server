@@ -1,6 +1,5 @@
 # Admin pages for users
 ActiveAdmin.register User do
-
   menu :if => proc{ can?(:update, User) }
   controller.authorize_resource
   controller do
@@ -17,6 +16,7 @@ ActiveAdmin.register User do
     column :language
     column :role, :sortable => :role_id
     column :last_sign_in_at
+    column "Activated", :is_activated, :sortable => :is_activated
     column :sign_in_count
     default_actions
   end

@@ -62,6 +62,7 @@ class User < ActiveRecord::Base
   
   def generate_token!
     update_attribute :api_token, Devise.friendly_token
+    update_attribute :is_activated, "Y"
   end
   
   def current_milestone
@@ -98,6 +99,13 @@ class User < ActiveRecord::Base
   def tracking_shipments
     self.shipments.joins(:milestones).where("milestones.action IN (?)", Milestone.tracking_actions).group('shipments.id')
   end
-
+  
+  def is_active
+    if self.api_token.nil?
+      return 'N'
+    else
+      return 'Y'   
+    end
+  end
 end
 
