@@ -58,7 +58,8 @@ es:
   label_company_name: Nombre de la Compañía
   label_address: Domicilio
   label_city: Ciudad  
-  label_zip: código Postal    
+  label_zip: código Postal
+  label_state: Estado
   label_phone: Teléfono 
   label_ext: Extension
   label_email: Email

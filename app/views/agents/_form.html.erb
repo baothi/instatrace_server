@@ -12,6 +12,8 @@
     <%= form.text_field :city, :class => 'span4' %>
     <%= label_tag :zip, t(:label_zip), :class => 'control-label' %>
     <%= form.text_field :zip, :class => 'span4' %>
+    <%= label_tag :state, t(:label_state), :class => 'control-label' %>
+    <%= form.select :state, options_for_select(us_states, form.object.state)%>
   </div>
 </div>
 <div class="control-group">

@@ -67,6 +67,7 @@ en:
   label_address: Address
   label_city: City
   label_zip: Zip
+  label_state: State
   label_phone: Phone
   label_ext: Ext
   label_email: Email
