@@ -96,7 +96,8 @@ class Shipment < ActiveRecord::Base
     
     #Parse pickup address
     origin_country_name = ''
-    if COUNTRY_CODE['countrycode'].include?(self.origin_country)
+    
+    if COUNTRY_CODE['countrycode'].include?(self.origin_country) && self.origin_country != "US"
         origin_country_name = COUNTRY_CODE['countrycode'][self.origin_country]
     end
     
@@ -127,7 +128,7 @@ class Shipment < ActiveRecord::Base
     
     #Parse destination address
     dest_country_name = ''
-    if COUNTRY_CODE['countrycode'].include?(self.dest_country)
+    if COUNTRY_CODE['countrycode'].include?(self.dest_country) && self.dest_country != "US"
         dest_country_name = COUNTRY_CODE['countrycode'][self.dest_country]
     end
     
