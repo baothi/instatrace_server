@@ -6,7 +6,7 @@ class Milestone < ActiveRecord::Base
   belongs_to :shipment
   belongs_to :driver, :class_name => 'User'
   
-  enum_attr :action, %w(pick-up back_at_base en_route_to_carrier tendered_to_carrier recovered_from_carrier out_for_delivery delivered completed_unloading/recovered departed_origin_terminal arrived_transfer_terminal departed_transfer_terminal arrived_destination_terminal Shipment_Delayed Alert_Onfirmed All_Import_Documents_Received On_hand_Dest_terminal Arrived_Dest_Terminal Booked_with_carrier Customs_Released/Cleared Tendered_to_Carrier Routing_Confirmed Recovered_Dest_Terminal Delivered_w/Proof_of_Delivery Picked_up_from_Shipper In_Transit Assigned_to_flight In_Customs_Clearance Shipment_on_Hold Confirmed_On_Board_Carrier Missing_EDI_Translation_Code On_hand_-_Dest_terminal Recovered_-_Dest_Terminal)
+  enum_attr :action, %w(pick-up back_at_base en_route_to_carrier tendered_to_carrier recovered_from_carrier out_for_delivery delivered completed_unloading/recovered departed_origin_terminal arrived_transfer_terminal departed_transfer_terminal arrived_destination_terminal Shipment_Delayed Alert_Onfirmed All_Import_Documents_Received On_hand_Dest_terminal Arrived_Dest_Terminal Booked_with_carrier Customs_Released/Cleared Tendered_to_Carrier Routing_Confirmed Recovered_Dest_Terminal Delivered_w/Proof_of_Delivery Picked_up_from_Shipper In_Transit Assigned_to_flight In_Customs_Clearance Shipment_on_Hold Confirmed_On_Board_Carrier Missing_EDI_Translation_Code On_hand_-_Dest_terminal Recovered_-_Dest_Terminal Recovered_from_Carrier Enroute_to_Carrier)
   
   validates :shipment_id, :driver_id, :action, :presence => {:if => :completed?}  
   validates :latitude, :longitude, :numericality => true, :presence => {:if => :completed?}  
@@ -33,6 +33,7 @@ class Milestone < ActiveRecord::Base
         #Resque doesn't update timezone in sometime,therefore, need to update timezone of milestone again when the user views milestone list
         if timezone.nil? && milestone.longitude != '0.0' &&  milestone.latitude != '0.0'             
            zone = RestClient.get("http://api.geonames.org/timezone?lat=#{milestone.latitude}&lng=#{milestone.longitude}&username=instatrace")
+           #zone = '<geonames><timezone tzversion="tzdata2012f"><countryCode>VN</countryCode><countryName>Vietnam</countryName><lat>10.85594755</lat><lng>106.63130029999999</lng><timezoneId>Asia/Ho_Chi_Minh</timezoneId><dstOffset>7.0</dstOffset><gmtOffset>7.0</gmtOffset><rawOffset>7.0</rawOffset><time>2013-01-04 11:23</time><sunrise>2013-01-04 06:12</sunrise><sunset>2013-01-04 17:43</sunset></timezone></geonames>'
            timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
            milestone.update_attribute(:timezone, timeshift) 
            "Waiting for synchronization"

@@ -78,8 +78,9 @@ class Api::ShipmentsController < Api::ApiController
             @shipment.origin_country = params[:shipment][:origin_country]
             
             @shipment.destination = params[:shipment][:dest_address1] 
-            if params[:shipment][:dest_address2]
-               @shipment.destination += "<br/>" + params[:shipment][:dest_address2] + "<br/>" 
+            
+            if params[:shipment][:dest_address2] && !params[:shipment][:dest_address2].blank?
+              @shipment.destination += "<br/>" + params[:shipment][:dest_address2] + "<br/>"
             end
             
             dest_country_name = COUNTRY_CODE['countrycode'][params[:shipment][:dest_country]] 
