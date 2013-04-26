@@ -5,6 +5,7 @@ class Milestone < ActiveRecord::Base
   has_one :signature, :dependent => :destroy
   belongs_to :shipment
   belongs_to :driver, :class_name => 'User'
+  belongs_to :agent
   
   enum_attr :action, %w(pick-up back_at_base en_route_to_carrier tendered_to_carrier recovered_from_carrier out_for_delivery delivered completed_unloading/recovered departed_origin_terminal arrived_transfer_terminal departed_transfer_terminal arrived_destination_terminal Shipment_Delayed Alert_Onfirmed All_Import_Documents_Received On_hand_Dest_terminal Arrived_Dest_Terminal Booked_with_carrier Customs_Released/Cleared Tendered_to_Carrier Routing_Confirmed Recovered_Dest_Terminal Delivered_w/Proof_of_Delivery Picked_up_from_Shipper In_Transit Assigned_to_flight In_Customs_Clearance Shipment_on_Hold Confirmed_On_Board_Carrier Missing_EDI_Translation_Code On_hand_-_Dest_terminal Recovered_-_Dest_Terminal Recovered_from_Carrier Enroute_to_Carrier)
   

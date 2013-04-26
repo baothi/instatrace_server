@@ -3,6 +3,7 @@ ActiveAdmin.register Milestone do
 
   filter :shipment, :as => :select, :collection => Shipment.select('id,hawb AS name').all
   filter :driver, :as => :select, :collection => User.drivers.select('id,email AS name').all
+  filter :agent, :as => :select, :collection => Agent.select('id,name AS name').all
   filter :action
   filter :damage_desc
   filter :created_at
