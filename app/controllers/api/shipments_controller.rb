@@ -218,6 +218,13 @@ class Api::ShipmentsController < Api::ApiController
           shipment_data['milestone']['driver_id'] = @user.id
           shipment_data['milestone']['damage_desc'] = shipment_data['damage']
           
+          agent = Agent.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Agent"', @user.id)
+          if(agent[0])
+            shipment_data['milestone']['agent_id'] = agent[0].id
+          else 
+            shipment_data['milestone']['agent_id'] = ""
+          end
+          
           action_code = ''
           #Set action_code for new milestone
           if shipment_data["milestone"]["action"]     

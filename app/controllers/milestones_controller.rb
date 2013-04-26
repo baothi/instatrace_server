@@ -28,6 +28,14 @@ class MilestonesController < ApplicationController
     milestone.damaged = milestone.damaged?
     
     milestone.driver_id = current_user.id if current_user.driver?
+    
+    agent = Agent.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Agent"', current_user.id)
+    if(agent[0])
+      milestone.agent_id = agent[0].id
+    else 
+      milestone.agent_id = ""
+    end
+    
     respond_to do |format|
       if milestone.save
         milestone.update_attribute(:completed, true)

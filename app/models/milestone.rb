@@ -1,6 +1,7 @@
 class Milestone < ActiveRecord::Base
   has_many :damages, :dependent => :destroy
   has_many :milestone_documents, :dependent => :destroy
+  has_many :user_relation
   
   has_one :signature, :dependent => :destroy
   belongs_to :shipment
@@ -110,6 +111,15 @@ class Milestone < ActiveRecord::Base
     if(self.latitude != 0 or self.longitude != 0)
       self.reverse_geocode
     end
+  end
+  def agent_name
+    if(self.agent_id)
+      agent = Agent.find(self.agent_id)
+      if(agent)
+        return agent.name
+      end
+    end
+    return ""
   end
 
  private

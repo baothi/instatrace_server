@@ -37,6 +37,9 @@ ActiveAdmin.register Milestone do
     column :driver do |driver|
       driver.driver.email if driver.driver
     end
+    # column :agent do |agent|
+      # agent.agent.name if agent.agent
+    # end
     column :action
     column :damaged
     column :public
@@ -52,6 +55,7 @@ ActiveAdmin.register Milestone do
     column 'Driver', :sortable => :'users.email' do |driver|
       link_to driver.driver.email, admin_user_path(driver.driver) if driver.driver
     end
+    #column 'Agent', :agent_name
     column :action
     column :damaged
     column :public

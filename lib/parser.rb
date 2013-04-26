@@ -120,6 +120,14 @@ class Parser
             milestone = Milestone.new
             milestone.shipment_id = shipment_id
             milestone.driver_id = driver_id
+            
+            agent = Agent.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Agent"', driver_id)
+            if(agent[0])
+              milestone.agent_id = agent[0].id
+            else 
+              milestone.agent_id = ""
+            end
+            
             milestone.completed = 1
             milestone.action = status_maps['wt_status']["#{wordtrak_status}"]
             milestone.action_code = wordtrak_status
@@ -281,6 +289,14 @@ class Parser
         milestone = Milestone.new    
         milestone.shipment_id = shipment_id
         milestone.driver_id = driver_id
+        
+        agent = Agent.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Agent"', driver_id)
+        if(agent[0])
+          milestone.agent_id = agent[0].id
+        else 
+          milestone.agent_id = ""
+        end
+        
         milestone.completed = 1    
         # Default location of Forward Air Inc
         #latitude = 36.1942916
@@ -342,6 +358,14 @@ class Parser
         milestone = Milestone.new    
         milestone.shipment_id = shipment_id
         milestone.driver_id = driver_id
+        
+        agent = Agent.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Agent"', driver_id)
+        if(agent[0])
+          milestone.agent_id = agent[0].id
+        else 
+          milestone.agent_id = ""
+        end
+        
         milestone.completed = 1    
         # Default location of Forward Air Inc
         #latitude = 36.1942916
