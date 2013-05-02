@@ -79,7 +79,7 @@ class Api::ShipmentsController < Api::ApiController
             
             @shipment.destination = params[:shipment][:dest_address1] 
             
-            if params[:shipment][:dest_address2] && !params[:shipment][:dest_address2].blank?
+            if params[:shipment][:dest_address2] && !params[:shipment][:dest_address2].nil?
               @shipment.destination += "<br/>" + params[:shipment][:dest_address2] + "<br/>"
             end
             
