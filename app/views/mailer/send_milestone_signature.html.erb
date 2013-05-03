@@ -11,7 +11,7 @@
   From:
 </p>
 <p>
-  <strong><%= raw @milestone.shipment.origin %> </strong>
+  <strong><%= raw @milestone.shipment.origin.gsub('<br/><br/>','<br>') %> </strong>
 </p>
 
 <% unless @milestone.shipment.destination.blank? %>
@@ -19,7 +19,7 @@
   To:
 </p>
 <p>
-  <strong><%= raw @milestone.shipment.destination.to_s %></strong>
+  <strong><%= raw @milestone.shipment.destination.to_s.gsub('<br/><br/>','<br>') %></strong>
 </p>
 <% end %>
 <p>

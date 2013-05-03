@@ -63,12 +63,12 @@ class Api::ShipmentsController < Api::ApiController
                @shipment = Shipment.new params[:shipment]           
             end
             
-            @shipment.origin =  params[:shipment][:origin_address1] 
-            if params[:shipment][:origin_address2] 
-               @shipment.origin += "<br/>" + params[:shipment][:origin_address2] + "<br/>"
+            @shipment.origin =  params[:shipment][:origin_address1] + "<br>"
+            if params[:shipment][:origin_address2] && !params[:shipment][:origin_address2].nil?
+               @shipment.origin += params[:shipment][:origin_address2] + "<br>"
             end   
             origin_country_name = COUNTRY_CODE['countrycode'][params[:shipment][:origin_country]] 
-            @shipment.origin += params[:shipment][:origin_city] + ", " + params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code]  + "<br/>" + origin_country_name
+            @shipment.origin += params[:shipment][:origin_city] + ", " + params[:shipment][:origin_state]   + " " + params[:shipment][:origin_zip_postal_code]  + "  " + origin_country_name
             
             @shipment.origin_address1 = params[:shipment][:origin_address1]
             @shipment.origin_address2 = params[:shipment][:origin_address2]
@@ -77,15 +77,15 @@ class Api::ShipmentsController < Api::ApiController
             @shipment.origin_zip_postal_code = params[:shipment][:origin_zip_postal_code]
             @shipment.origin_country = params[:shipment][:origin_country]
             
-            @shipment.destination = params[:shipment][:dest_address1] 
+            @shipment.destination = params[:shipment][:dest_address1] + "<br>"
             
             if params[:shipment][:dest_address2] && !params[:shipment][:dest_address2].nil?
-              @shipment.destination += "<br/>" + params[:shipment][:dest_address2] + "<br/>"
+              @shipment.destination += params[:shipment][:dest_address2] + "<br>"
             end
             
             dest_country_name = COUNTRY_CODE['countrycode'][params[:shipment][:dest_country]] 
             
-            @shipment.destination += params[:shipment][:dest_city] +  ", " +  params[:shipment][:dest_state]  +  " "  +    params[:shipment][:dest_zip_postal_code]  + "<br/>"  + dest_country_name
+            @shipment.destination += params[:shipment][:dest_city] +  ", " +  params[:shipment][:dest_state]  +  " "  +    params[:shipment][:dest_zip_postal_code]  + "  "  + dest_country_name
             @shipment.dest_address1 = params[:shipment][:dest_address1]
             @shipment.dest_address2 = params[:shipment][:dest_address2]
             @shipment.dest_city = params[:shipment][:dest_city]
