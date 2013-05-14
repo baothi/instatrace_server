@@ -95,6 +95,7 @@ en:
   header_sign_up: Sign up
   header_change_your_password: Change Your Password
   header_damage_notifications: Damage Notifications
+  header_activation_code: Activation Code
 
   text_prompt_select: '-Select-'
   text_prompt_search: '- Search By -'

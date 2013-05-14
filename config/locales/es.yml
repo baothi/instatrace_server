@@ -86,7 +86,8 @@ es:
   header_create_new_company: Crear Agente transitorio nuevo
   header_sign_up: Registrarse
   header_change_your_password: Cambiar contrasena
-  header_damage_notifications: Notificacion de danos  
+  header_damage_notifications: Notificacion de danos
+  header_activation_code: Código de Activación
 
   text_prompt_select: '-Seleccionar-'
   text_prompt_search: '- Buscar por -'
