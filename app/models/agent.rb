@@ -4,11 +4,12 @@ class Agent < ActiveRecord::Base
 
 	has_many  :user_relations, :as => :owner, :dependent => :destroy
 	has_many  :users, :through => :user_relations
+	has_many :milestones, :foreign_key => :agent_id
 
 	attr_accessor :query
 
 	validates :name, :uniqueness => {:case_sensitive => false}
-  validates :name, :address, :city, :zip, :state, :phone, :presence => true, :length => {:maximum => 255}
+  validates :name, :email, :address, :city, :zip, :state, :phone, :presence => true, :length => {:maximum => 255}
 
 	scope :search, lambda {|params|
 		where(["name LIKE ?", "%#{params['name']}%"]) if params && params['name'].present?

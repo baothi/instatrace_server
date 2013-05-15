@@ -8,7 +8,7 @@ class Company < ActiveRecord::Base
   attr_accessor :query
 
   validates :name, :uniqueness => {:case_sensitive => false}
-  validates :name, :address, :city, :zip, :phone, :presence => true, :length => {:maximum => 255}
+  validates :name, :email, :address, :city, :zip, :phone, :presence => true, :length => {:maximum => 255}
   
   scope :search, lambda {|params|
     where(["name LIKE ?", "%#{params['name']}%"]) if params && params['name'].present?

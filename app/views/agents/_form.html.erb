@@ -5,7 +5,9 @@
   </div>
 </div>
 <div class="control-group">
-  <div class="controls">  
+  <div class="controls">
+    <%= label_tag :email, t('agent.form.email'), :class => 'control-label' %>
+    <%= form.email_field :email, :class => 'span4' %>
     <%= label_tag :address, t(:label_address), :class => 'control-label' %>
     <%= form.text_field :address, :class => 'span4' %>
     <%= label_tag :city, t(:label_city), :class => 'control-label' %>
