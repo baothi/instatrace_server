@@ -1,6 +1,7 @@
 <%= semantic_form_for [:admin, @agent] do |f| %>
   <%= f.inputs "Agents Details" do %>
     <%= f.input :name %>
+    <%= f.input :email %>
     <%= f.input :address %>
     <%= f.input :city %>
     <%= f.input :phone %>
