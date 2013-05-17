@@ -7,6 +7,7 @@ class TimezoneUpdater
     timeshift = Hash.from_xml(zone)["geonames"]["timezone"]["gmtOffset"].to_f
     milestone.update_attribute(:timezone, timeshift)
     Mailer.send_milestone_signature(milestone).deliver if milestone.signature && milestone.signature.email
+    Mailer.damage_notifier(milestone).deliver if milestone.damages && milestone.damages.size > 0
   end
 end
   
