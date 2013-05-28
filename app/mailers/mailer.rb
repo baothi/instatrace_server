@@ -12,8 +12,9 @@ class Mailer < ActionMailer::Base
   end
 
   def damage_notifier(milestone)
+    @milestone = milestone
   	@shipment = milestone.shipment
-  	subject = "Shimpent #{@shipment.shipment_id} was over, short or damaged"
+  	subject = "Shimpent #{@shipment.shipment_id} has reported Over, Short or Damaged"
   	
   	# send mail to operator, agent, freight forwarder when driver records a over, short or damaged
   	recipients = milestone.driver.user_relations.first.owner.users.operators.map &:email

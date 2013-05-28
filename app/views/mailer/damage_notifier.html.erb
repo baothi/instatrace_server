@@ -1,4 +1,4 @@
-Please let me inform you that shipment was over, short or damaged.
+<!-- Please let me inform you that shipment was over, short or damaged.
 <br />
 
 <%= link_to 'Link to shipment details', shipment_url(@shipment.id) %>
@@ -8,4 +8,26 @@ Thank you and have a great day!
 <br />
 ----
 regards,
-instatrace team
+instatrace team -->
+
+Shipment <strong><%= @milestone.shipment.hawb %></strong> has reported an OSD by driver <strong><%= @milestone.driver.try(:last_name) %><%= ", " + @milestone.driver.try(:first_name) if ! @milestone.driver.try(:first_name).nil? %> </strong>. 
+<br /> 
+<br />
+
+Description: <% if @milestone.damaged %>
+                <%= @milestone.damage_desc %>
+             <% end %>
+<br />
+<br />
+
+Photo: 
+<%= text = 'image'
+    urls = []
+    @milestone.damages.each_with_index do |damage,i| 
+        urls << link_to("#{text}#{i+1}", "#{root_url.gsub("/en",'')}#{damage.photo.url}", :target => :blank)
+    end if @milestone.damages
+    raw(urls.join(', '))%>
+<br />
+<br />
+
+Thank You.
