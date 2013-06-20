@@ -33,4 +33,11 @@ class Mailer < ActionMailer::Base
     subject = "Milestone signature for shipment #{milestone.shipment.hawb}" 
     mail(:to => milestone.signature.email, :subject => subject) if milestone.signature.email
   end
+  
+  # Checking any new shipments was created in the last 24 hours by api/post_shipment. If none, send mail notify
+  def post_shipment_notifier(shipment)
+    @shipment = shipment
+    subject = "WARNING: No InstaTrace Shipments Posted in 24 hours" 
+    mail(:to => EMAIL_NOTIFY_POST_SHIPMENT_API, :subject => subject) if shipment.hawb && shipment.created_at
+  end
 end

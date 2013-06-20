@@ -60,7 +60,8 @@ class Api::ShipmentsController < Api::ApiController
                 @shipment.pieces.delete_all            
                 @shipment.update_attributes(params[:shipment])
             else
-               @shipment = Shipment.new params[:shipment]           
+               @shipment = Shipment.new params[:shipment]
+               @shipment.is_post_shipment = 1
             end
             
             @shipment.origin =  params[:shipment][:origin_address1] + "<br>"
@@ -187,7 +188,7 @@ class Api::ShipmentsController < Api::ApiController
             #raise Exception, t('errors.messages.not_found')
             logger = Logger.new("#{Rails.root}/log/api_errors.log", 1, 100 * 1024 * 1024)
             logger.info "                             "
-            logger.info "#{Time.now}"
+            logger.info "# Logfile created on #{Time.now}"
             logger.info "*****************ERROR POST Shipment"
             logger.info "*****************data post :"
             logger.info "#{params.inspect}"
@@ -206,6 +207,8 @@ class Api::ShipmentsController < Api::ApiController
         
         # Store Log in api_errors.log
         logger = Logger.new("#{Rails.root}/log/api_errors.log", 1, 100 * 1024 * 1024)
+        logger.info "                             "
+        logger.info "# Logfile created on #{Time.now}"
         logger.info "*****************ERROR POST Shipment"
         logger.info "*****************data post :"
         logger.info "#{params.inspect}"
