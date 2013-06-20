@@ -185,6 +185,13 @@ class Api::ShipmentsController < Api::ApiController
         else
             #Invalid JSON data post
             #raise Exception, t('errors.messages.not_found')
+            logger = Logger.new("#{Rails.root}/log/api_errors.log", 1, 100 * 1024 * 1024)
+            logger.info "                             "
+            logger.info "#{Time.now}"
+            logger.info "*****************ERROR POST Shipment"
+            logger.info "*****************data post :"
+            logger.info "#{params.inspect}"
+            
             render :json => {:status => 400, :message => t('errors.messages.not_found')}
         end
     rescue Exception => e  
@@ -196,6 +203,18 @@ class Api::ShipmentsController < Api::ApiController
         Rails.logger.info "*****************error backtrace :"
         Rails.logger.info "#{e.backtrace.inspect}"
         Rails.logger.info "********************************************************************"
+        
+        # Store Log in api_errors.log
+        logger = Logger.new("#{Rails.root}/log/api_errors.log", 1, 100 * 1024 * 1024)
+        logger.info "*****************ERROR POST Shipment"
+        logger.info "*****************data post :"
+        logger.info "#{params.inspect}"
+        logger.info "*****************error message :"
+        logger.info "#{e.message}"
+        logger.info "*****************error backtrace :"
+        logger.info "#{e.backtrace.inspect}"
+        logger.info "********************************************************************"
+        
         render :json => {:status => 400, :message => e.message}
     end
   end
