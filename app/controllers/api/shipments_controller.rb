@@ -240,6 +240,13 @@ class Api::ShipmentsController < Api::ApiController
           shipment_data['milestone']['driver_id'] = @user.id
           shipment_data['milestone']['damage_desc'] = shipment_data['damage']
           
+          # Params for checking send mail notify to Agent and 
+          if shipment_data['milestone']['damaged'] && shipment_data['milestone']['damaged'] == 1
+            shipment_data['milestone']['damaged_notifier'] = 1
+          else
+            shipment_data['milestone']['damaged_notifier'] = ""
+          end
+          
           agent = Agent.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Agent"', @user.id)
           if(agent[0])
             shipment_data['milestone']['agent_id'] = agent[0].id
