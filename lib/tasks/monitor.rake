@@ -7,4 +7,15 @@ namespace :monitor do
       Mailer.post_shipment_notifier(lastShipment).deliver if lastShipment
     end
   end
+  
+  task :check_milestone_damaged => :environment do
+    milestones = Milestone.where("damaged_notifier = 1")
+    if milestones
+      milestones.each do |milestone|
+        Mailer.damage_notifier(milestone).deliver
+        milestone.damaged_notifier = ""
+        milestone.save
+      end
+    end
+  end
 end
