@@ -12,7 +12,7 @@ namespace :monitor do
     milestones = Milestone.where("damaged_notifier = 1")
     if milestones
       milestones.each do |milestone|
-        Mailer.damage_notifier(milestone).deliver
+        Mailer.milestone_damaged_notifier(milestone).deliver
         milestone.damaged_notifier = ""
         milestone.save
       end

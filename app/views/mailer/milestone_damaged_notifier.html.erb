@@ -1,15 +1,3 @@
-<!-- Please let me inform you that shipment was over, short or damaged.
-<br />
-
-<%= link_to 'Link to shipment details', shipment_url(@shipment.id) %>
-<br />
-Thank you and have a great day!
-<br />
-<br />
-----
-regards,
-instatrace team -->
-
 Shipment <strong><%= @milestone.shipment.hawb %></strong> has reported an OSD by driver <strong><%= @milestone.driver.try(:last_name) %><%= ", " + @milestone.driver.try(:first_name) if ! @milestone.driver.try(:first_name).nil? %> </strong>. 
 <br /> 
 <br />
