@@ -20,7 +20,7 @@ class Milestone < ActiveRecord::Base
   before_save :should_update_timezone
 
   after_save do
-    if @update_timezone == true
+    if @update_timezone == true && self.damage_notifier != 0
       Resque.enqueue(TimezoneUpdater, self.id)
       Resque.enqueue(MilestoneGeocoder, self.id)
     end

@@ -13,8 +13,7 @@ namespace :monitor do
     if milestones
       milestones.each do |milestone|
         Mailer.milestone_damaged_notifier(milestone).deliver
-        milestone.damaged_notifier = ""
-        milestone.save
+        milestone.update_attribute(:damaged_notifier, 0)
       end
     end
   end
