@@ -23,6 +23,10 @@ class Milestone < ActiveRecord::Base
     if @update_timezone == true
       Resque.enqueue(TimezoneUpdater, self.id)
       Resque.enqueue(MilestoneGeocoder, self.id)
+      if(self.damaged_notifier == 1)
+        mailsecond = Mailersecond.new
+        mailsecond.milestone_damaged_notifier(self).deliver  
+      end
     end
   end
 
