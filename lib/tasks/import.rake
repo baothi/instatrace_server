@@ -57,11 +57,31 @@ namespace :import do
        end
     end
     
+    # Uncomment for run import milestone every 20 minutes
+    # setting = Setting.find_by_name('EnableDescartesIntegration')
+    # if setting && setting.value == '1'    
+       # descartes_path = "/home/descartesftp/"
+       # old_path = "/home/descartesftp/old/"
+       # parse_files = Dir.glob(descartes_path+'*.FSA')
+       # parse_files.each do |file|
+          # begin
+              # Parser.new(:file_name => file, :path => '', :parser_type => 'milestones_descartes', :file_type => '')
+              # FileUtils.mv(file, old_path + Pathname.new(file).basename.to_s)
+              # puts "==============================Updated Descartes Milestones: #{file}"
+          # rescue Exception => e
+              # message = e.message
+              # puts "==============================Updated Descartes Milestones: #{file} , error: #{message}"
+              # next
+          # end
+       # end
+    # end
+  end
+  
+  task :descartes_milestones => :environment do
     setting = Setting.find_by_name('EnableDescartesIntegration')    
     if setting && setting.value == '1'    
        descartes_path = "/home/descartesftp/"
        old_path = "/home/descartesftp/old/"
-       
        parse_files = Dir.glob(descartes_path+'*.FSA')
        parse_files.each do |file|
           begin
@@ -83,11 +103,16 @@ namespace :import do
   end
 
   desc "Run all tasks at the time"
-  task :run_all => [:shipments, :milestones, :descartes_get_response] do
+  task :run_all => [:shipments, :milestones] do
     puts '**********************All tasks was processed completely**********************'
   end
   
-  # This task will get response FSA from Descartes server per each 20 minutes
+  desc "Run descartes tasks at the time"
+  task :run_descartes => [:descartes_milestones, :descartes_get_response] do
+    puts '**********************All Descartes was processed completely**********************'
+  end
+  
+  # This task will get response FSA from Descartes server 4 time per day 8am,11am,3pm,5pm
   task :descartes_get_response => :environment do
     puts "**********************RUN TASK descartes_get_response**********************"
     require 'net/ftp'
