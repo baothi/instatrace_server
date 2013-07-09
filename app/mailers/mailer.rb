@@ -39,7 +39,7 @@ class Mailer < ActionMailer::Base
     freightForwarder = Company.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Company"', milestone.driver_id)
     recipients << freightForwarder[0].email if freightForwarder[0] && freightForwarder[0].email
     
-    mail(:to => recipients.join(','), :subject => subject) if milestone.signature.email
+    mail(:to => recipients.join(','), :subject => subject)
 
   end
 
