@@ -39,6 +39,10 @@ class Mailer < ActionMailer::Base
     freightForwarder = Company.joins(:user_relations).where('user_relations.user_id = ? AND user_relations.owner_type = "Company"', milestone.driver_id)
     recipients << freightForwarder[0].email if freightForwarder[0] && freightForwarder[0].email
     
+    # Send mail notify to Company which assigned to HAWB
+    company = Company.first(:conditions =>["name =?", 'TransPak Corporation'])
+    recipients << company.email if company && company.email
+    
     mail(:to => recipients.join(','), :subject => subject)
 
   end
