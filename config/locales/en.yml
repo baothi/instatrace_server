@@ -164,6 +164,7 @@ en:
   column_ffs: FFs
   column_username: Username
   column_signature: Signature
+  column_freight_forwarder_code: Freight Forwarder Code
 
   user:
     form:

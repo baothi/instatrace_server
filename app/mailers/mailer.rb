@@ -30,6 +30,7 @@ class Mailer < ActionMailer::Base
   
   def milestone_damaged_notifier(milestone)
     @milestone = milestone
+    @shipment = milestone.shipment
     subject = "Shimpent #{milestone.shipment.hawb} has reported Over, Short or Damaged"
     
     recipients = Array.new
@@ -40,7 +41,7 @@ class Mailer < ActionMailer::Base
     recipients << freightForwarder[0].email if freightForwarder[0] && freightForwarder[0].email
     
     # Send mail notify to Company which assigned to HAWB
-    company = Company.first(:conditions =>["name =?", 'TransPak Corporation'])
+    company = Company.first(:conditions =>["freight_forwarder_code =?", @shipment.freight_forwarder_code])
     recipients << company.email if company && company.email
     
     mail(:to => recipients.join(','), :subject => subject)

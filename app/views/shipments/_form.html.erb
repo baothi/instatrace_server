@@ -29,7 +29,9 @@
         <%= label_tag :ship_date, t(:column_ship_date), :class => 'control-label' %>
         <%= form.text_field :ship_date,  :value => Date.today, :class => 'span4 datepicker' %>
         <%= label_tag :delivery_date, t(:column_delivery_date), :class => 'control-label' %>
-        <%= form.text_field :delivery_date, :value  => Date.today, :class => 'span4 datepicker' %>        
+        <%= form.text_field :delivery_date, :value  => Date.today, :class => 'span4 datepicker' %>
+        <%= label_tag :freight_forwarder_code, t(:freight_forwarder_code), :class => 'control-label' %>
+        <%= form.text_field :freight_forwarder_code, :class => 'span4' %>       
       </div>
     </div>
   </div>

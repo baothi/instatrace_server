@@ -6,26 +6,28 @@
     <th>&nbsp;</th>
     <td>&nbsp;</td>
   </tr>
-  <tr width="50%">
+  <tr width="56%">
     <td valign="top">
       <table class="table_detail" cellspacing="20" width="100%">
         <tr>
-          <th><%= t(:column_hawb) %></th>
-          <th><%= t(:column_mawb) %></th>
-          <th><%= t(:column_service_level) %></th>
+          <th style="width: 24%"><%= t(:column_hawb) %></th>
+          <th style="width: 24%"><%= t(:column_mawb) %></th>
+          <th style="width: 22%"><%= t(:column_service_level) %></th>
+          <th><%= t(:column_freight_forwarder_code) %></th>
         </tr>
         <tr>
           <td valign="top"><%= @shipment.hawb_with_scac %></td>
           <td valign="top"><%= @shipment.mawb %></td>
           <td valign="top"><%= @shipment.service_level %></td>
+          <td valign="top"><%= @shipment.freight_forwarder_code %></td>
         </tr>
       </table>
     </td>
-    <td width="50%" valign="top">
+    <td width="44%" valign="top">
       <table class="table_detail2" width="100%">
         <tr>
-          <th><%= t(:column_weight) %></th>
-          <th><%= t(:column_pieces) %></th>
+          <th style="width: 25%"><%= t(:column_weight) %></th>
+          <th style="width: 25%"><%= t(:column_pieces) %></th>
           <th><%= t(:column_expected_delivery_date) %></th>
         </tr>
         <tr>

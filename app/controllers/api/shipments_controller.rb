@@ -113,6 +113,9 @@ class Api::ShipmentsController < Api::ApiController
                 message = 'The length of country code requires two characters'
                 valid = false
             end
+            if params[:shipment][:freight_forwarder_code] && !params[:shipment][:freight_forwarder_code].nil?
+              @shipment.freight_forwarder_code = params[:shipment][:freight_forwarder_code]
+            end
             
             if valid && @shipment.save! 
                 piece = Piece.find_by_sql ["SELECT SUM(weight) as weight, SUM(height) as height, SUM(length) as length, count(id) as pieces_total FROM pieces WHERE shipment_id = ? ",@shipment.id]
