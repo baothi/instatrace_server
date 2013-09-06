@@ -21,6 +21,7 @@
     <th><%= t("role_#{k.singularize}".to_sym) %><%= t(:column_name) %> </th>
     <th><%= t(:column_email) %></th>
     <th><%= t(:column_phone) %></th>
+    <th style="width: 15%;"><%= t(:column_activated) %></th>
     <th><%= t(:column_username) %></th>
     <% if company_users.allowed? %>
       <th class="mark">&nbsp;</th>
@@ -38,6 +39,7 @@
       <td class="link_bold"> <%= user.user_fullname %> </td>
       <td> <%= user.email %> </td>
       <td> <%= user.phone %> </td>
+      <td> <%= user.is_activated %> </td>
       <td> <%= user.login %></td>
       <% if company_users.allowed? %>
         <td> <%= link_to '<i class="icon-pencil"></i>'.html_safe, url_for(:action => 'edit', :controller => 'users',company_users.class.to_s.foreign_key.to_sym => company_users.id, :id => user.id), :class => 'popup', :title => t(:title_modify) if can?(:update, company_users.class) && can?(:update, User) %> </td>

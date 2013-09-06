@@ -165,6 +165,7 @@ en:
   column_username: Username
   column_signature: Signature
   column_freight_forwarder_code: Freight Forwarder Code
+  column_activated: Activated
 
   user:
     form:

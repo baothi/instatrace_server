@@ -152,6 +152,7 @@ es:
   column_ffs: FFs
   column_username: Nombre de Usuario
   column_freight_forwarder_code: Código Freight Forwarder
+  column_activated: Activado
 
   user: 
     form: 
